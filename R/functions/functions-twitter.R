@@ -98,7 +98,7 @@
 .get_timeline_verbosely <-
   function(user, since_id, ..., verbose = config$verbose) {
     if(verbose) {
-      msg <- sprintf("Getting timeline for %s since last evaluated tweet: %s", screen_name, status_id)
+      msg <- sprintf("Getting timeline for %s since last evaluated tweet: %s", user, since_id)
       message(msg)
     }
     

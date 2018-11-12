@@ -104,7 +104,8 @@
       }
       return(..get_ratio_df_default())
     }
-    path %>% 
+    data <-
+      path %>% 
       # read_csv() %>% 
       # .unconvert_id_cols_at()
       read_csv(
@@ -127,7 +128,7 @@
       msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
       message(msg)
     }
-    path
+    data
   }
 import_ratio_last <- purrr::partial(.import_ratio_file, path = config$path_last)
 import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
