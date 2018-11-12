@@ -1,0 +1,9 @@
+default:
+  path_last: "data/scrape-last.csv"
+  path_log: "data/scrape-log.csv"
+  
+  verbose: true
+  backup: true
+
+production:
+  
