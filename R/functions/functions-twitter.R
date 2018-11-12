@@ -34,9 +34,7 @@
 .get_reply_count <-
   function(data, status_id, ...) {
     
-    # .status_id <- status_id
     data %>%
-      # filter(reply_to_status_id %in% .status_id) %>% 
       filter(reply_to_status_id == !!status_id) %>% 
       count() %>% 
       pull(n)
@@ -95,7 +93,7 @@
       arrange(screen_name, desc(created_at)) 
   }
 
-.get_timeline_verbosely <-
+.get_tl_verbosely <-
   function(user, since_id, ..., verbose = config$verbose) {
     if(verbose) {
       msg <- sprintf("Getting timeline for %s since last evaluated tweet: %s", user, since_id)
@@ -107,82 +105,129 @@
       .select_tl_cols_at()
   }
 
-.get_timeline_verbosely_possibly <-
+.get_tl_verbosely_possibly <-
   purrr::possibly(
-    .f = .get_timeline_verbosely,
+    .f = .get_tl_verbosely,
     # .f = rtweet::get_timeline,
     otherwise = ..get_tl_df_default(),
     quiet = FALSE
   )
 
+..validate_ratio_df <-
+  function(data, ...) {
+    stopifnot(is.data.frame(data))
+    stopifnot(all(.COLS_RATIO_ORDER %in% names(data)))
+  }
+
+..validate_tl_df <-
+  function(data, ...) {
+    stopifnot(is.data.frame(data))
+    stopifnot(all(.COLS_TL_ORDER %in% names(data)))
+  }
+
+.do_get_tl <-
+  function(ratio_last, ..., verbose = config$verbose) {
+    ratio_last_cnt <-
+      ratio_last %>%
+      # count(screen_name, status_id) %>% 
+      group_by(screen_name, status_id) %>% 
+      summarise(.n = n()) %>% 
+      ungroup() %>% 
+      filter(n > 1L)
+    cnd <- ifelse(nrow(data_cnt) > 0L, TRUE, FALSE)
+    if(cnd) {
+      msg_fmt <- "Expected 1 `status_id` for each `screen_name`. Found %s statuses for `%s`."
+      data_cnt %>% 
+        mutate(msg = sprintf(msg_fmt, n, screen_name)) %>% 
+        pull(msg) %>% 
+        purrr::walk(stop, .call = FALSE)
+    }
+    if(verbose) {
+      msg <- "Retrieving latest tweets based on imported most recent ratios/statuses."
+      message(msg)
+    }
+    tl_raw <-
+      ratio_last %>%
+      select(screen_name, status_id) %>% 
+      mutate(
+        data = 
+          purrr::pmap(
+            list(screen_name, status_id), 
+            ~.get_tl_verbosely_possibly(user = ..1, since_id = ..2)
+          )
+      )
+    
+    tl <-
+      tl_raw %>% 
+      select(data) %>% 
+      unnest(data)
+    tl
+  }
+
+..describe_screen_name <-
+  function(tl, ratio, ...) {
+    
+    screen_name_before <- ratio %>% .pull_distinctly(screen_name)
+    screen_name_after <- tl %>% .pull_distinctly(screen_name)
+    screen_name_diff1 <- setdiff(screen_name_before, screen_name_after)
+    screen_name_diff2 <- setdiff(screen_name_after, screen_name_before)
+    if(length(screen_name_diff1) > 0L) {
+      screen_name_diff_coll <- paste(screen_name_diff1, sep = "", collapse = ", ")
+      msg <- sprintf("No new tweets to score for some names: %s.", screen_name_diff_coll)
+      message(msg)
+    } else if(length(screen_name_diff2) > 0L) {
+      screen_name_diff_coll <- paste(screen_name_diff2, sep = "", collapse = ", ")
+      msg <- sprintf("New screen names to evluate: %s.", screen_name_diff_coll)
+      message(msg)
+    } else {
+      msg <- "New tweets to score for all screen names (and no new screen names)."
+      message(msg)
+    }
+    tl
+  }
+
+..describe_tl_before_ratio <-
+  function(tl, ...) {
+    tl_cnt <-
+      tl %>%
+      count(screen_name)
+    tl_cnt %>% 
+      mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>% 
+      pull(msg) %>% 
+      purrr::walk(message)
+    tl
+  }
+
 .N_HOUR_LAG <- 24L
 # NOTE: `tl` is made to be an argument so that this funciton
 # can be used to "initialize" new `screen_name`(s) that have not been evaluated before.
 do_get_ratio <-
-  function(tl = NULL, ..., verbose = config$verbose) {
+  function(tl = NULL, ratio_last = NULL, ..., verbose = config$verbose) {
     
-    ratio_last_import <- import_ratio_last()
+    if(is.null(ratio_last)) {
+      ratio_last <- import_ratio_last()
+    }
+
+    ..validate_ratio_df(ratio_last)
     if(is.null(tl)) {
       if(verbose) {
         msg <- "Retrieving latest tweets based on imported most recent ratios/statuses."
         message(msg)
       }
-      tl_raw <-
-        ratio_last_import %>%
-        select(screen_name, status_id) %>% 
-        mutate(
-          data = 
-            purrr::pmap(
-              list(screen_name, status_id), 
-              ~.get_timeline_verbosely_possibly(user = ..1, since_id = ..2)
-            )
-        )
-      
-    tl <-
-      tl_raw %>% 
-      select(data) %>% 
-      unnest(data)
-
+      tl <- ratio_last_import %>% .do_get_tl()
     }
-    
-    stopifnot(is.data.frame(tl))
-    stopifnot(all(c("screen_name", "status_id") %in% names(tl)))
+    ..validate_tl_df(tl)
     
     # NOTE: Do this to make sure that `tl` is trim (whether it is provided by the user
-    # or generated for the condition `tl = NULL` (even if th `.get_timeline_verbosely_possibly()`
+    # or generated for the condition `tl = NULL` (even if th `.get_tl_verbosely_possibly()`
     # function already calls this function.)).
-    tl <-
-      tl %>%
-      .select_tl_cols_at()
-    
+    tl <- tl %>% .select_tl_cols_at()
     if(verbose) {
-      screen_name_before <- ratio_last_import %>% .pull_distinctly(screen_name)
-      screen_name_after <- tl %>% .pull_distinctly(screen_name)
-      screen_name_diff1 <- setdiff(screen_name_before, screen_name_after)
-      screen_name_diff2 <- setdiff(screen_name_after, screen_name_before)
-      if(length(screen_name_diff1) > 0L) {
-        screen_name_diff_coll <- paste(screen_name_diff1, sep = "", collapse = ", ")
-        msg <- sprintf("No new tweets to score for some names: %s.", screen_name_diff_coll)
-        message(msg)
-      } else if(length(screen_name_diff2) > 0L) {
-        screen_name_diff_coll <- paste(screen_name_diff2, sep = "", collapse = ", ")
-        msg <- sprintf("New screen names to evluate: %s.", screen_name_diff_coll)
-        message(msg)
-      } else {
-        msg <- "New tweets to score for all screen names (and no new screen names)."
-        message(msg)
-      }
+      ..describe_screen_name(tl = tl, ratio = ratio_last_import)
     }
     
     if(verbose) {
-      tl_cnt <-
-        tl %>%
-        count(screen_name)
-      tl_cnt %>% 
-        mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>% 
-        pull(msg) %>% 
-        purrr::walk(message)
-        
+      ..describe_tl_before_ratio(tl = tl)
     }
     
     reply_raw <-

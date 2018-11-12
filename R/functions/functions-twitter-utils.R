@@ -104,26 +104,28 @@
       }
       return(..get_ratio_df_default())
     }
-    data <-
-      path %>% 
-      # read_csv() %>% 
-      # .unconvert_id_cols_at()
-      read_csv(
-        col_type = cols(
-          user_id = col_character(),
-          screen_name = col_character(),
-          created_at = col_datetime(),
-          status_id = col_character(),
-          favorite_count = col_integer(),
-          retweet_count = col_integer(),
-          text = col_character(),
-          reply_count = col_integer(),
-          ratio = col_double(),
-          ratio_inv = col_double(),
-          timestamp_scrape = col_datetime()
-        ),
-        ...
-      )
+    # data <-
+    #   path %>% 
+    #   # read_csv() %>% 
+    #   # .unconvert_id_cols_at()
+    #   read_csv(
+    #     col_type = cols(
+    #       user_id = col_character(),
+    #       screen_name = col_character(),
+    #       created_at = col_datetime(),
+    #       status_id = col_character(),
+    #       favorite_count = col_integer(),
+    #       retweet_count = col_integer(),
+    #       text = col_character(),
+    #       reply_count = col_integer(),
+    #       ratio = col_double(),
+    #       ratio_inv = col_double(),
+    #       timestamp_scrape = col_datetime()
+    #     ),
+    #     ...
+    #   )
+    # data <- data %>% rtweet:::unprepend_ids()
+    data <- path %>% rtweet::read_twitter_csv()
     if(verbose) {
       msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
       message(msg)
@@ -142,6 +144,8 @@ import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
         message(msg)
       }
     }
+    # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
+    data <- data %>% rtweet:::flatten_rtweet() %>% rtweet:::prepend_ids()
     data %>% write_csv(path, append = append, ...)
     if(verbose) {
       msg <- sprintf("Exported data to %s at %s.", path, Sys.time())
