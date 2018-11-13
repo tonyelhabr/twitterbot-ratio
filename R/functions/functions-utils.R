@@ -13,16 +13,23 @@
 
 # NOTE: This function is inspired by the `.create_backup()` function (functions-db) in the sports-predict project.
 .create_backup <-
-  function(path, suffix_backup = format(Sys.time(), "%Y-%m-%d_%H-%M-%S")) {
-    stopifnot(file.exists(path))
-    file <- tools::file_path_sans_ext(path)
-    ext <- tools::file_ext(path)
-    path_backup <-
-      sprintf("%s-%s.%s", file, suffix_backup, ext)
+  function(path,
+           ..., 
+           file = tools::file_path_sans_ext(path),
+           ext = tools::file_ext(path),
+           suffix_backup = format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
+           path_backup = sprintf("%s-%s.%s", file, suffix_backup, ext)) {
+
+    if(!file.exists(path)) {
+      msg <- sprintf("Backup file %s cannot be created because %s cannot be found!", path_backup, path)
+      warning(msg, call. = FALSE)
+      return(path_backup)
+    }
+    
     if(file.exists(path_backup)) {
       msg <- sprintf("Backup file %s already exists! Are you sure you want to overwrite it?", path_backup)
       stop(msg, call. = FALSE)
-      return(FALSE)
+      return(path_backup)
     }
     invisible(file.copy(from = path, to = path_backup))
     path_backup

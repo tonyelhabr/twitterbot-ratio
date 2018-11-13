@@ -126,6 +126,7 @@
     #   )
     # data <- data %>% rtweet:::unprepend_ids()
     data <- path %>% rtweet::read_twitter_csv()
+    data <- data %>% .reconvert_datetime_cols()
     if(verbose) {
       msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
       message(msg)
@@ -135,26 +136,31 @@
 import_ratio_last <- purrr::partial(.import_ratio_file, path = config$path_last)
 import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
 
-.export_ratio_file <-
+.export_twitter_file <-
   function(data, ..., path, append, verbose = config$verbose, backup = config$backup) {
     if(backup) {
       path_backup <- .create_backup(path = path)
-      if(verbose) {
-        msg <- sprintf("Backed up %s before exporting to %s.", path_backup, path)
-        message(msg)
+      if(file.exists(path_backup)) {
+        if(verbose) {
+          msg <- sprintf("Backed up %s before exporting to %s.", path_backup, path)
+          message(msg)
+        }
       }
     }
     # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
-    data <- data %>% rtweet:::flatten_rtweet() %>% rtweet:::prepend_ids()
+    # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
+    data <- data %>% rtweet:::prepend_ids()
     data %>% write_csv(path, append = append, ...)
     if(verbose) {
       msg <- sprintf("Exported data to %s at %s.", path, Sys.time())
       message(msg)
     }
-    path
+    invisible(path)
   }
-export_ratio_last <- purrr::partial(.export_ratio_file, path = config$path_last, append = FALSE)
-export_ratio_log <- purrr::partial(.export_ratio_file, path = config$path_log, append = TRUE)
+# config$path_tl_cache <- "data/tl-cahce.csv"
+export_tl_cache <- purrr::partial(.export_twitter_file, path = config$path_tl_cache, append = FALSE)
+export_ratio_last <- purrr::partial(.export_twitter_file, path = config$path_last, append = FALSE)
+export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = !file.exists(config$path_log))
 
 
 

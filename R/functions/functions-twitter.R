@@ -113,80 +113,60 @@
     quiet = FALSE
   )
 
-..validate_ratio_df <-
-  function(data, ...) {
+.validate_twitter_df <-
+  function(data, cols, ...) {
     stopifnot(is.data.frame(data))
-    stopifnot(all(.COLS_RATIO_ORDER %in% names(data)))
+    # stopifnot(nrow(data) > 0L)
+    stopifnot(all(cols %in% names(data)))
   }
 
-..validate_tl_df <-
-  function(data, ...) {
-    stopifnot(is.data.frame(data))
-    stopifnot(all(.COLS_TL_ORDER %in% names(data)))
-  }
-
-.do_get_tl <-
-  function(ratio_last, ..., verbose = config$verbose) {
+.validate_ratio_df <- purrr::partial(.validate_twitter_df, cols = .COLS_RATIO_ORDER)
+.validate_tl_df <- purrr::partial(.validate_twitter_df, cols = .COLS_TL_ORDER)
+.validate_ratio_last_df <-
+  function(data, cols, ...) {
+    .validate_ratio_df(data = data, cols = cols)
     ratio_last_cnt <-
       ratio_last %>%
-      # count(screen_name, status_id) %>% 
-      group_by(screen_name, status_id) %>% 
-      summarise(.n = n()) %>% 
-      ungroup() %>% 
+      count(screen_name, status_id) %>% 
+      # group_by(screen_name, status_id) %>% 
+      # summarise(nn = n()) %>% 
+      # ungroup() %>% 
       filter(n > 1L)
-    cnd <- ifelse(nrow(data_cnt) > 0L, TRUE, FALSE)
+    cnd <- ifelse(nrow(ratio_last_cnt) > 0L, TRUE, FALSE)
     if(cnd) {
       msg_fmt <- "Expected 1 `status_id` for each `screen_name`. Found %s statuses for `%s`."
-      data_cnt %>% 
+      ratio_last_cnt %>% 
         mutate(msg = sprintf(msg_fmt, n, screen_name)) %>% 
         pull(msg) %>% 
         purrr::walk(stop, .call = FALSE)
     }
-    if(verbose) {
-      msg <- "Retrieving latest tweets based on imported most recent ratios/statuses."
-      message(msg)
-    }
-    tl_raw <-
-      ratio_last %>%
-      select(screen_name, status_id) %>% 
-      mutate(
-        data = 
-          purrr::pmap(
-            list(screen_name, status_id), 
-            ~.get_tl_verbosely_possibly(user = ..1, since_id = ..2)
-          )
-      )
-    
-    tl <-
-      tl_raw %>% 
-      select(data) %>% 
-      unnest(data)
-    tl
   }
 
-..describe_screen_name <-
+.describe_screen_name <-
   function(tl, ratio, ...) {
     
-    screen_name_before <- ratio %>% .pull_distinctly(screen_name)
-    screen_name_after <- tl %>% .pull_distinctly(screen_name)
-    screen_name_diff1 <- setdiff(screen_name_before, screen_name_after)
-    screen_name_diff2 <- setdiff(screen_name_after, screen_name_before)
-    if(length(screen_name_diff1) > 0L) {
-      screen_name_diff_coll <- paste(screen_name_diff1, sep = "", collapse = ", ")
-      msg <- sprintf("No new tweets to score for some names: %s.", screen_name_diff_coll)
-      message(msg)
-    } else if(length(screen_name_diff2) > 0L) {
-      screen_name_diff_coll <- paste(screen_name_diff2, sep = "", collapse = ", ")
-      msg <- sprintf("New screen names to evluate: %s.", screen_name_diff_coll)
-      message(msg)
-    } else {
-      msg <- "New tweets to score for all screen names (and no new screen names)."
+    nm_ratio <- ratio %>% .pull_distinctly(screen_name)
+    nm_tl <- tl %>% .pull_distinctly(screen_name)
+    nm_diff1 <- setdiff(nm_ratio, nm_tl)
+    nm_diff2 <- setdiff(nm_tl, nm_ratio)
+    if(length(nm_diff1) > 0L) {
+      nm_diff_coll <- paste(nm_diff1, sep = "", collapse = ", ")
+      msg <- sprintf("No new tweets to score for some names: %s.", nm_diff_coll)
       message(msg)
     }
-    tl
+    
+    if(length(nm_diff2) > 0L) {
+      nm_diff_coll <- paste(nm_diff2, sep = "", collapse = ", ")
+      msg <- sprintf("New screen name(s) to evaluate: %s.", nm_diff_coll)
+      message(msg)
+    } else {
+      msg <- "New tweets to score for all screen name(s) (and no new screen names)."
+      message(msg)
+    }
+    invisible(tl)
   }
 
-..describe_tl_before_ratio <-
+.describe_tl_before_ratio <-
   function(tl, ...) {
     tl_cnt <-
       tl %>%
@@ -195,12 +175,37 @@
       mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>% 
       pull(msg) %>% 
       purrr::walk(message)
-    tl
+    invisible(tl)
   }
 
 .N_HOUR_LAG <- 24L
-# NOTE: `tl` is made to be an argument so that this funciton
-# can be used to "initialize" new `screen_name`(s) that have not been evaluated before.
+.filter_ratio_df_at <-
+  function(data, ...) {
+    data %>% 
+      filter(created_at <= (.TIME - lubridate::hours(.N_HOUR_LAG))) 
+  }
+
+do_get_ratio1 <-
+  function(screen_name, status_id = NULL, tl = NULL, ratio_last = NULL, ..., verbose = config$verbose) {
+    if(is.null(status_id)) {
+      ratio_last <- purrr::possibly(import_ratio_last, otherwise = NULL)
+      if(is.null(ratio_last)) {
+        ratio_log <- purrr::possibly(import_ratio_log, otherwise = NULL)
+        if(is.null(ratio_log)) {
+          
+        }
+        ratio_last <- ratio_log %>% .slice_ratio_df_at()
+      }
+      .validate_ratio_last_df(ratio_last)
+      nms <- ratio_lat %>% tetidy::pull_distinctly(screen_name)
+      
+      
+    }
+    if(is.null(ratio_last)) {
+      ratio_last <- import_ratio_last()
+    }
+  }
+
 do_get_ratio <-
   function(tl = NULL, ratio_last = NULL, ..., verbose = config$verbose) {
     
@@ -208,28 +213,43 @@ do_get_ratio <-
       ratio_last <- import_ratio_last()
     }
 
-    ..validate_ratio_df(ratio_last)
+    .validate_ratio_last_df(ratio_last)
     if(is.null(tl)) {
       if(verbose) {
         msg <- "Retrieving latest tweets based on imported most recent ratios/statuses."
         message(msg)
       }
-      tl <- ratio_last_import %>% .do_get_tl()
+      tl_raw <-
+        ratio_last %>%
+        select(screen_name, status_id) %>% 
+        mutate(
+          data = 
+            purrr::pmap(
+              list(screen_name, status_id), 
+              ~.get_tl_verbosely_possibly(user = ..1, since_id = ..2)
+            )
+        )
+      
+      tl <-
+        tl_raw %>% 
+        select(data) %>% 
+        unnest(data)
+      tl
     }
-    ..validate_tl_df(tl)
+    .validate_tl_df(tl)
     
     # NOTE: Do this to make sure that `tl` is trim (whether it is provided by the user
     # or generated for the condition `tl = NULL` (even if th `.get_tl_verbosely_possibly()`
     # function already calls this function.)).
     tl <- tl %>% .select_tl_cols_at()
     if(verbose) {
-      ..describe_screen_name(tl = tl, ratio = ratio_last_import)
+      .describe_screen_name(tl = tl, ratio = ratio_last)
     }
     
     if(verbose) {
-      ..describe_tl_before_ratio(tl = tl)
+      .describe_tl_before_ratio(tl = tl)
     }
-    
+    tl %>% export_tl_cache()
     reply_raw <-
       tl %>%
       group_by(screen_name) %>% 
@@ -260,20 +280,21 @@ do_get_ratio <-
       ratio %>% 
       .add_ratio_cols_at() %>%
       .add_timestamp_scrape_col_at() %>% 
-      .arrange_ratio_df_at()
+      .arrange_ratio_df_at() %>% 
+      .filter_ratio_df_at()
     
     ratio_log %>% export_ratio_log()
     
-    # browser()
     ratio_last_export <-
       bind_rows(
-        ratio_last_import,
+        # ratio_last %>% mutate_at(vars(ratio_inv), funs(as.numeric)),
+        ratio_last,
         ratio_log
       ) %>% 
-      filter(created_at <= (.TIME - lubridate::hours(.N_HOUR_LAG))) %>% 
+      .filter_ratio_df_at() %>% 
       .slice_ratio_df_at()
     
     ratio_last_export %>% export_ratio_last()
-    ratio_log
+    invisible(ratio_log)
   }
 

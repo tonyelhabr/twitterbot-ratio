@@ -1,6 +1,7 @@
 default:
   path_last: "data/scrape-last.csv"
   path_log: "data/scrape-log.csv"
+  path_tl_cache: "data/tl-cache.csv"
   
   verbose: true
   backup: true
