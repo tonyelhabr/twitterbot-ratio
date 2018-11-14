@@ -3,6 +3,8 @@ default:
   path_log: "data/scrape-log.csv"
   path_tl_cache: "data/tl-cache.csv"
   
+  n_hour_lag: 24
+  
   verbose: true
   backup: true
 
