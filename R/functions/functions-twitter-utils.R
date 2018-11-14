@@ -102,7 +102,8 @@
         msg <- sprintf("%s does not exist.", path)
         message(msg)
       }
-      return(..get_ratio_df_default())
+      # return(..get_ratio_df_default())
+      return(NULL)
     }
     # data <-
     #   path %>% 
@@ -162,5 +163,15 @@ export_tl_cache <- purrr::partial(.export_twitter_file, path = config$path_tl_ca
 export_ratio_last <- purrr::partial(.export_twitter_file, path = config$path_last, append = FALSE)
 export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = !file.exists(config$path_log))
 
-
+export_tl_cahce1 <-
+  function(data,
+           screen_name,
+           ...,
+           path = config$path_tl_cache,
+           file = tools::file_path_sans_ext(path),
+           ext = tools::file_ext(path),
+           suffix = screen_name,
+           path_cache = sprintf("%s-%s.%s", file, suffix, ext)) {
+    .export_twitter_file(data = data, path = path_cache, ...)
+  }
 
