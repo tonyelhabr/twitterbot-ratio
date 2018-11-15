@@ -4,8 +4,8 @@
 # .N_SCREEN_NAME <- ifelse(file.exists(config$path_last), import_ratio_last() %>% nrow(), 3L)
 .N_SCREEN_NAME <- 4L
 .MAX_PER_SESSION <- 18000L
-# .N_SCALE <- 1L
-.N_SCALE <- 1L / (.N_SCREEN_NAME)
+.N_SCALE <- 1L
+# .N_SCALE <- 1L / (.N_SCREEN_NAME)
 .N_SEARCH <- .N_SCALE * .MAX_PER_SESSION %>% floor() %>% as.integer()
 # .N_SEARCH <- .MAX_PER_SESSION
 
@@ -84,7 +84,7 @@
 .get_tl <-
   function(user, since_id, ..., verbose = config$verbose_scrape) {
     if(verbose) {
-      msg <- sprintf("Getting timeline for %s since last evaluated tweet: %s", user, since_id)
+      msg <- sprintf("Getting timeline for \"%s\" since last evaluated tweet: %s", user, since_id)
       message(msg)
     }
 
@@ -127,10 +127,9 @@
       filter(created_at <= (.TIME - lubridate::hours(n_hour_lag)))
   }
 
-do_get_ratio1 <-
+do_get_ratio <-
   function(screen_name,
            tl = NULL,
-           # tl_cache = NULL, # TODO.
            since_id = NULL,
            ratio_log = NULL,
            ratio_last = NULL,
@@ -152,7 +151,7 @@ do_get_ratio1 <-
     if (is.null(ratio_log)) {
       ratio_log <- purrr::possibly(import_ratio_log, otherwise = NULL)()
       if (is.null(ratio_log)) {
-        msg <- "Is this the first time you are doing this?"
+        msg <- sprintf("Is this the first time you are doing this? (If so, you should create the `ratio_log` file explicitly.)")
         stop(msg, call. = FALSE)
       }
     }
@@ -194,7 +193,7 @@ do_get_ratio1 <-
         .get_tl_possibly(user = screen_name, since_id = since_id)
       if(is.null(tl)) {
         msg <- sprintf("Did not find any tweets for %s.", screen_name)
-        warning(msg)
+        message(msg)
         return(NULL)
       }
     }
@@ -218,7 +217,7 @@ do_get_ratio1 <-
       message(msg)
     }
 
-    path_tl_cache <- export_tl_cache1(tl_filt, screen_name)
+    path_tl_cache <- export_tl_cache(tl_filt, screen_name)
     # NOTE: Not sure if this is a good idea...
     on.exit(path_tl_cache)
     reply_raw <-

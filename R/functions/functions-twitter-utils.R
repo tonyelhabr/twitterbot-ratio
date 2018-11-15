@@ -102,29 +102,8 @@
         msg <- sprintf("%s does not exist.", path)
         message(msg)
       }
-      # return(..get_ratio_df_default())
       return(NULL)
     }
-    # data <-
-    #   path %>%
-    #   # read_csv() %>%
-    #   # .unconvert_id_cols_at()
-    #   read_csv(
-    #     col_type = cols(
-    #       user_id = col_character(),
-    #       screen_name = col_character(),
-    #       created_at = col_datetime(),
-    #       status_id = col_character(),
-    #       favorite_count = col_integer(),
-    #       retweet_count = col_integer(),
-    #       text = col_character(),
-    #       reply_count = col_integer(),
-    #       ratio = col_double(),
-    #       ratio_inv = col_double(),
-    #       timestamp_scrape = col_datetime()
-    #     ),
-    #     ...
-    #   )
     # data <- data %>% rtweet:::unprepend_ids()
     data <- path %>% rtweet::read_twitter_csv()
     data <- data %>% .reconvert_datetime_cols()
@@ -138,44 +117,31 @@ import_ratio_last <- purrr::partial(.import_ratio_file, path = config$path_last)
 import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
 
 .export_twitter_file <-
-  function(data, ..., path, append, verbose = config$verbose_file, backup = config$backup_file) {
+  function(data, ..., path, append, backup = config$backup_file, verbose = config$verbose_file) {
     if(backup) {
       path_backup <- .create_backup(path = path)
-      if(file.exists(path_backup)) {
-        if(verbose) {
-          msg <- sprintf("Backed up %s before exporting to %s.", path_backup, path)
-          message(msg)
-        }
-      }
-      # # TODO: Leave only 1 backup file.
-      # paths_like_backup <-
-      #   list.files(
-      #     path = dirname(path),
-      #     pattern = "",
-      #     recursive = FALSE
-      #   )
+      .clean_backup(path = path)
     }
     # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
     # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
     data <- data %>% rtweet:::prepend_ids()
-    data %>% write_csv(path, append = append, ...)
+    write_csv(data, path, append = append, ...)
     if(verbose) {
       msg <- sprintf("Exported data to %s at %s.", path, Sys.time())
       message(msg)
     }
     invisible(path)
   }
-# config$path_tl_cache <- "data/tl-cahce.csv"
-export_tl_cache <- purrr::partial(.export_twitter_file, path = config$path_tl_cache, append = FALSE)
-export_ratio_last <- purrr::partial(.export_twitter_file, path = config$path_last, append = FALSE)
-export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = file.exists(config$path_log))
 
-export_tl_cache1 <-
+export_ratio_last <- purrr::partial(.export_twitter_file, path = config$path_last, append = FALSE, backup = FALSE)
+export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = file.exists(config$path_log), backup = FALSE)
+
+export_tl_cache <-
   function(data,
            screen_name,
            ...,
            append = FALSE,
-           backup = FALSE,
+           backup = TRUE,
            path = config$path_tl_cache,
            file = tools::file_path_sans_ext(path),
            ext = tools::file_ext(path),

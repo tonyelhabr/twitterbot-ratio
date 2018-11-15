@@ -8,5 +8,5 @@ tl_init <-
   )
 purrr::pwalk(
   list(.SCREEN_NAME,, tl_init),
-  ~do_get_ratio1(screen_name = ..1, tl = ..2)
+  ~do_get_ratio(screen_name = ..1, tl = ..2)
 )
