@@ -56,7 +56,7 @@ do_get_ratio <-
   function(tl = NULL,
            ratio_last = NULL,
            ...,
-           verbose = config$verbose) {
+           verbose = config$verbose_scrape) {
     if (is.null(ratio_last)) {
       ratio_last <- import_ratio_last()
     }

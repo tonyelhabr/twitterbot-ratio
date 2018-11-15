@@ -1,5 +1,6 @@
 
-setwd("C:/Users/aelhabr/Documents/projects/twitterbot-ratio")
+# setwd("C:/Users/aelhabr/Documents/projects/twitterbot-ratio")
+setwd("O:/_other/projects/twitterbot-ratio")
 invisible(source(".Rprofile"))
 
 # .SCREEN_NAME <- c("bomani_jones")

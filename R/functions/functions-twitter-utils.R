@@ -57,7 +57,7 @@
       favorite_count = integer(),
       retweet_count = integer(),
       text = character()
-    ) %>% 
+    ) %>%
       .reorder_tl_cols_at()
   }
 
@@ -71,7 +71,7 @@
         ratio_inv = double(),
         timestamp_scrape = lubridate::as_datetime(character())
       )
-    ) %>% 
+    ) %>%
       .reorder_ratio_cols_at()
   }
 
@@ -95,8 +95,8 @@
 
 
 .import_ratio_file <-
-  function(..., path, verbose = config$verbose) {
-    
+  function(..., path, verbose = config$verbose_file) {
+
     if(!file.exists(path)) {
       if(verbose) {
         msg <- sprintf("%s does not exist.", path)
@@ -106,8 +106,8 @@
       return(NULL)
     }
     # data <-
-    #   path %>% 
-    #   # read_csv() %>% 
+    #   path %>%
+    #   # read_csv() %>%
     #   # .unconvert_id_cols_at()
     #   read_csv(
     #     col_type = cols(
@@ -138,7 +138,7 @@ import_ratio_last <- purrr::partial(.import_ratio_file, path = config$path_last)
 import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
 
 .export_twitter_file <-
-  function(data, ..., path, append, verbose = config$verbose, backup = config$backup) {
+  function(data, ..., path, append, verbose = config$verbose_file, backup = config$backup_file) {
     if(backup) {
       path_backup <- .create_backup(path = path)
       if(file.exists(path_backup)) {
@@ -147,6 +147,13 @@ import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
           message(msg)
         }
       }
+      # # TODO: Leave only 1 backup file.
+      # paths_like_backup <-
+      #   list.files(
+      #     path = dirname(path),
+      #     pattern = "",
+      #     recursive = FALSE
+      #   )
     }
     # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
     # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
@@ -161,18 +168,25 @@ import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
 # config$path_tl_cache <- "data/tl-cahce.csv"
 export_tl_cache <- purrr::partial(.export_twitter_file, path = config$path_tl_cache, append = FALSE)
 export_ratio_last <- purrr::partial(.export_twitter_file, path = config$path_last, append = FALSE)
-export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = !file.exists(config$path_log))
+export_ratio_log <- purrr::partial(.export_twitter_file, path = config$path_log, append = file.exists(config$path_log))
 
 export_tl_cache1 <-
   function(data,
            screen_name,
            ...,
            append = FALSE,
+           backup = FALSE,
            path = config$path_tl_cache,
            file = tools::file_path_sans_ext(path),
            ext = tools::file_ext(path),
            suffix = screen_name,
            path_cache = sprintf("%s-%s.%s", file, suffix, ext)) {
-    .export_twitter_file(data = data, path = path_cache, append = append, ...)
+    .export_twitter_file(
+      data = data,
+      path = path_cache,
+      append = append,
+      backup = backup,
+      ...
+    )
   }
 

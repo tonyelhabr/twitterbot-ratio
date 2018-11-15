@@ -5,8 +5,8 @@
   function(data, col) {
     col <- enquo(col)
     data %>%
-      distinct(!!col) %>% 
-      arrange(!!col) %>% 
+      distinct(!!col) %>%
+      arrange(!!col) %>%
       pull(!!col)
   }
 
@@ -14,7 +14,7 @@
 # NOTE: This function is inspired by the `.create_backup()` function (functions-db) in the sports-predict project.
 .create_backup <-
   function(path,
-           ..., 
+           ...,
            file = tools::file_path_sans_ext(path),
            ext = tools::file_ext(path),
            suffix_backup = format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
@@ -25,7 +25,7 @@
       warning(msg, call. = FALSE)
       return(path_backup)
     }
-    
+
     if(file.exists(path_backup)) {
       msg <- sprintf("Backup file %s already exists! Are you sure you want to overwrite it?", path_backup)
       stop(msg, call. = FALSE)

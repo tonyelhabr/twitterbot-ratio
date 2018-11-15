@@ -18,7 +18,7 @@
            n = .N_SEARCH,
            include_rts = FALSE,
            retryonratelimit = TRUE,
-           verbose = config$verbose) {
+           verbose = config$verbose_scrape) {
 
     rtweet::search_tweets(
       q = q,
@@ -66,7 +66,7 @@
         ratio = reply_count / (favorite_count + retweet_count)
       ) %>%
       mutate(
-        ratio_inv = coalesce(1 / ratio, 0)
+        ratio_inv = if_else(ratio == 0, 0, 1 / ratio)
       )
   }
 
@@ -82,7 +82,7 @@
   }
 
 .get_tl <-
-  function(user, since_id, ..., verbose = config$verbose) {
+  function(user, since_id, ..., verbose = config$verbose_scrape) {
     if(verbose) {
       msg <- sprintf("Getting timeline for %s since last evaluated tweet: %s", user, since_id)
       message(msg)
@@ -135,14 +135,14 @@ do_get_ratio1 <-
            ratio_log = NULL,
            ratio_last = NULL,
            ...,
-           verbose = config$verbose) {
+           verbose = config$verbose_scrape) {
 
     # screen_name = "bomani_jones"
     # tl = NULL
     # since_id = NULL
     # ratio_log = NULL
     # ratio_last = NULL
-    # verbose = config$verbose
+    # verbose = config$verbose_scrape
 
     # message(rep("-", getOption("width")))
     message(rep("-", 80L))
@@ -203,18 +203,26 @@ do_get_ratio1 <-
 
     tl <- .select_tl_cols_at(tl)
 
+    tl_filt <-
+      tl %>%
+      .filter_tl_bytime()
+
     if (verbose) {
-      n <- nrow(tl)
+      n <- nrow(tl_filt)
+      if(n == 0L) {
+        msg <- sprintf("No tweets to score for %s.", screen_name)
+        message(msg)
+        return(NULL)
+      }
       msg <- sprintf("Scoring %s tweet(s) for %s.", n, screen_name)
       message(msg)
     }
 
-    path_tl_cache <- export_tl_cache1(tl, screen_name)
+    path_tl_cache <- export_tl_cache1(tl_filt, screen_name)
     # NOTE: Not sure if this is a good idea...
     on.exit(path_tl_cache)
-
     reply_raw <-
-      tl %>%
+      tl_filt %>%
       arrange(created_at) %>%
       slice(1) %>%
       mutate(data =
@@ -229,8 +237,7 @@ do_get_ratio1 <-
       unnest(data)
 
     ratio <-
-      tl %>%
-      .filter_tl_bytime() %>%
+      tl_filt %>%
       mutate(reply_count =
                purrr::map_int(status_id, ~ .get_reply_count(data = reply, status_id = .x)))
 
@@ -245,7 +252,7 @@ do_get_ratio1 <-
     ratio_last_export <-
       bind_rows(
         ratio_last,
-        ratio_log %>% .filter_tl_bytime()
+        ratio_log # %>% .filter_tl_bytime()
       ) %>%
       .convert_ratio_log_to_last()
 

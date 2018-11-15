@@ -2,11 +2,12 @@ default:
   path_last: "data/scrape-last.csv"
   path_log: "data/scrape-log.csv"
   path_tl_cache: "data/tl-cache.csv"
-  
-  n_hour_lag: 24
-  
-  verbose: true
-  backup: true
+
+  n_hour_lag: 12
+
+  verbose_scrape: true
+  verbose_file: false
+  backup_file: true
 
 production:
-  
+
