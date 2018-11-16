@@ -27,7 +27,8 @@
       n = n,
       include_rts = include_rts,
       retryonratelimit = retryonratelimit,
-      verbose = TRUE
+      verbose = TRUE,
+      token = rtweet::get_token()
     )
   }
 
@@ -88,7 +89,7 @@
       message(msg)
     }
 
-    rtweet::get_timeline(user = user, since_id = since_id, ...) %>%
+    rtweet::get_timeline(user = user, since_id = since_id, token = rtweet::get_token(), ...) %>%
       .filter_tweet_type() %>%
       .select_tl_cols_at()
   }

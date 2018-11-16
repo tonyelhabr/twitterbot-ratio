@@ -6,6 +6,7 @@ if(!interactive()) {
   wd <- file.path(dir_wd, prj)
   setwd(wd)
   invisible(source(".Rprofile"))
+  # token <- rtweet::get_token()
 }
 
 if(!interactive()) {
