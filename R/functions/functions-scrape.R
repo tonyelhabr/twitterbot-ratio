@@ -35,6 +35,8 @@
     res
   }
 
+.add_timestamp_post_col_at <-
+  purrr::partial(.add_timestamp_scrape_col_at, col = "timestamp_post")
 
 .add_scrape_cols_at <-
   function(data, ...) {

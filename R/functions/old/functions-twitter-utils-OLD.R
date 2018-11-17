@@ -13,7 +13,7 @@
       .reorder_tl_cols_at()
   }
 
-..get_ratio_df_default <-
+..scrape_ratio_df_default <-
   function(...) {
     bind_cols(
       ..get_tl_df_default(),
@@ -38,4 +38,16 @@
       msg <- sprintf("Expected 1 `status_id`. Instead, found %s statuses for `%s`.", n_status_id, !!screen_name)
       stop(msg, call. = FALSE)
     }
+  }
+
+.unconvert_id_cols_at <-
+  function(data, cols = str_subset(names(data), "user_id|status_id"), ...) {
+    data %>%
+      mutate_at(vars(one_of(cols)), funs(as.character))
+  }
+
+.unconvert_datetime_cols <-
+  function(data, cols = str_subset(names(data), "^created_at$|^timestamp"), ...) {
+    data %>%
+      mutate_at(vars(one_of(cols)), funs(as.character))
   }

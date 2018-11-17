@@ -22,15 +22,23 @@
            verbose = config$verbose_file) {
 
     if(!file.exists(path)) {
-      msg <- sprintf("Backup file %s cannot be created because %s cannot be found!", path_backup, path)
-      warning(msg, call. = FALSE)
+      msg <-
+        sprintf(
+          "Backup file %s cannot be created because %s cannot be found!",
+          path_backup,
+          path
+        )
+      message(msg, call. = FALSE)
       return(path_backup)
     }
 
     if(file.exists(path_backup)) {
-      msg <- sprintf("Backup file %s already exists! Are you sure you want to overwrite it?", path_backup)
+      msg <-
+        sprintf(
+          "Backup file %s already exists! Are you sure you want to overwrite it?",
+          path_backup
+        )
       stop(msg, call. = FALSE)
-      return(path_backup)
     }
     invisible(file.copy(from = path, to = path_backup))
     if(verbose) {
@@ -59,11 +67,18 @@
     if(n < n_keep) {
       if(n == 0L) {
         msg <- sprintf("No backup files to delete.")
-        warning(msg, call. = FALSE)
+        message(msg, call. = FALSE)
         return(path)
       }
-      msg <- sprintf("Number of backup files (%.0f) is less than `keep` (%.0f), so not deleting any backup files.", n, n_keep)
-      # warning(msg, call. = FALSE)
+      msg <-
+        sprintf(
+          paste0(
+            "Number of backup files (%.0f) is less than `keep` (%.0f), ",
+                 "so not deleting any backup files."
+                 ),
+          n,
+          n_keep
+        )
       message(msg)
       return(path)
     }
@@ -75,4 +90,15 @@
       message(msg)
     }
     invisible(path)
+  }
+
+.validate_onerow_df <-
+  function(data, ...) {
+    stopifnot(is.data.frame(data))
+    n_row <- nrow(data)
+    if (ifelse(n_row > 1L, TRUE, FALSE)) {
+      msg <- sprintf("Expected `data` to have only 1 row. Instead, found `%s`.", n_row)
+      stop(msg, call. = FALSE)
+    }
+    invisible(data)
   }

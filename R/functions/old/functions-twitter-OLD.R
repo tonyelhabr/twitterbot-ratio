@@ -1,7 +1,7 @@
 
 # TODO: Programmatically figure out .N_SCREEN_NAME?
 # .N_SCREEN_NAME <- 3L
-# .N_SCREEN_NAME <- ifelse(file.exists(config$path_last), import_ratio_last() %>% nrow(), 3L)
+# .N_SCREEN_NAME <- ifelse(file.exists(config$path_ratio_last_scrape), import_ratio_last_scrape() %>% nrow(), 3L)
 .N_SCREEN_NAME <- 4L
 .MAX_PER_SESSION <- 18000L
 .N_SCALE <- 1L

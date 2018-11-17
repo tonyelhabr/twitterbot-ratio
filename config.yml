@@ -1,25 +1,25 @@
 default:
-  path_last: "data/scrape-last.csv"
-  path_log: "data/scrape-log.csv"
+  path_screen_name: "data-raw/screen_name.csv"
+  path_ratio_last_scrape: "data/ratio-last.csv"
+  path_ratio_log: "data/ratio-log.csv"
   path_tl_cache: "data/tl-cache.csv"
+  path_ratio_last_post: "data/ratio-post.csv"
 
   n_hour_lag_scrape: 12
   n_tl_new: 100
 
-  token: !expr rtweet::get_token()
+  cache: true
+
+  post_reply: true
+  post_retweet: false
+  post_favorite: true
 
   verbose_scrape: true
   verbose_post: true
   verbose_file: false
   backup_file: true
 
-  screen_name:
-    - RealSkipBayless
-    - stephenasmith
-    - NateSilver538
-    - bomani_jones
-    - BillSimmons
-    - PFTcommenter
+  token: !expr rtweet::get_token()
 
 production:
 

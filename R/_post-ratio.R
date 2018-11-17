@@ -11,10 +11,9 @@ message(rep("*", 80L))
 msg <- sprintf("Started script at %s.", Sys.time())
 message(msg)
 
-# purrr::possibly(do_scrape_ratio_all, otherwise = message("Encountered an error..."))
-do_scrape_ratio_all()
+# purrr::possibly(do_post_ratio_all, otherwise = message("Encountered an error..."))
+do_post_ratio_all()
 
 msg <- sprintf("Finished script at %s.", Sys.time())
 message(msg)
 message(rep("*", 80L))
-

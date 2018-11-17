@@ -8,7 +8,7 @@ update_ratio_last <-
       .arrange_ratio_df_at() %>% 
       filter(created_at <= (.TIME - lubridate::hours(.N_HOUR_LAG))) %>% 
       .slice_ratio_df_at()
-    ratio_last_export %>% readr::write_csv(config$path_last, append = FALSE)
+    ratio_last_export %>% readr::write_csv(config$path_ratio_last_scrape, append = FALSE)
   }
 
 distinctify_ratio_log <-
@@ -23,7 +23,7 @@ distinctify_ratio_log <-
       filter(replies_count == max(replies_count)) %>% 
       # filter(timestamp_scrape == last(timestamp_scrape)) %>% 
       .arrange_ratio_df_at()
-    ratio_last_export %>% readr::write_csv(config$path_last, append = FALSE)
+    ratio_last_export %>% readr::write_csv(config$path_ratio_last_scrape, append = FALSE)
   }
 
 .add_timestamp_scrape_cols_at <-
