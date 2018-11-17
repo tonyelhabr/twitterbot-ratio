@@ -11,14 +11,55 @@
     "text"
   )
 
-.COLS_RATIO_ORDER <-
+.COLS_RATIO_BASE_ORDER <-
   c(
     .COLS_TL_ORDER,
     "reply_count",
     "ratio",
     "ratio_inv",
     "timestamp_scrape"
+
   )
+.COLS_RATIO_SCORE_ORDER <-
+  c(
+    "considered",
+    "posted",
+    "status_id_post",
+    "text_post",
+    "timestamp_post"
+  )
+.COLS_RATIO_ORDER <-
+  c(
+    .COLS_RATIO_BASE_ORDER,
+    .COLS_RATIO_SCORE_ORDER
+  )
+
+.validate_twitter_df <-
+  function(data, cols, ...) {
+    stopifnot(is.data.frame(data))
+    # stopifnot(nrow(data) > 0L)
+    stopifnot(all(cols %in% names(data)))
+  }
+
+.validate_ratio_df <- purrr::partial(.validate_twitter_df, cols = .COLS_RATIO_ORDER)
+.validate_tl_df <- purrr::partial(.validate_twitter_df, cols = .COLS_TL_ORDER)
+
+.validate_twitter_onerow_df <-
+  function(data, col, ...) {
+    stopifnot(is.data.frame(data))
+    stopifnot(is.character(col))
+    col_sym <- sym(col)
+    n_col <-
+      data %>%
+      count(!!col_sym) %>%
+      filter(n > 1L)
+    if(ifelse(nrow(n_col) > 0L, TRUE, FALSE)) {
+      msg <- sprintf("Expected 1 value for `%s`. Instead, found %s values.", col)
+      stop(msg, call. = FALSE)
+    }
+  }
+.validate_ratio_onerow_df <-
+  purrr::partial(.validate_twitter_onerow_df, col = "screen_name")
 
 ..reorder_twitter_cols_at <-
   function(data, ..., col_names_order) {
@@ -46,35 +87,6 @@
 .select_ratio_cols_at <-
   purrr::partial(..select_twitter_cols_at, col_names = .COLS_RATIO_ORDER)
 
-# TODO: Figure out a better way to do this. (Maybe don't do this at all? Or maybe use `purrr::possiblye()`?)
-..get_tl_df_default <-
-  function(...) {
-    tibble(
-      user_id = character(),
-      screen_name = character(),
-      created_at = lubridate::as_datetime(character()),
-      status_id = character(),
-      favorite_count = integer(),
-      retweet_count = integer(),
-      text = character()
-    ) %>%
-      .reorder_tl_cols_at()
-  }
-
-..get_ratio_df_default <-
-  function(...) {
-    bind_cols(
-      ..get_tl_df_default(),
-      tibble(
-        reply_count = double(),
-        ratio = double(),
-        ratio_inv = double(),
-        timestamp_scrape = lubridate::as_datetime(character())
-      )
-    ) %>%
-      .reorder_ratio_cols_at()
-  }
-
 .unconvert_id_cols_at <-
   function(data, cols = str_subset(names(data), "user_id|status_id"), ...) {
     data %>%
@@ -92,7 +104,6 @@
     data %>%
       mutate_at(vars(one_of(cols)), funs(lubridate::ymd_hms))
   }
-
 
 .import_ratio_file <-
   function(..., path, verbose = config$verbose_file) {
@@ -115,6 +126,11 @@
   }
 import_ratio_last <- purrr::partial(.import_ratio_file, path = config$path_last)
 import_ratio_log <- purrr::partial(.import_ratio_file, path = config$path_log)
+
+.import_ratio_log_possibly <-
+  purrr::possibly(import_ratio_log, otherwise = NULL)
+.import_ratio_last_possibly <-
+  purrr::possibly(import_ratio_last, otherwise = NULL)
 
 .export_twitter_file <-
   function(data, ..., path, append, backup = config$backup_file, verbose = config$verbose_file) {

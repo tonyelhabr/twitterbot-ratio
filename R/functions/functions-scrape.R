@@ -2,7 +2,10 @@
 # NOTE: See the sports-predict project (functions-db-tr).
 .TIME <- Sys.time()
 .get_ymdhm <-
-  function(time = .TIME, resolution = 1L) {
+  function(time = NULL, resolution = 1L) {
+    if(is.null(time)) {
+      time <- .TIME
+    }
     stopifnot(lubridate::is.POSIXct(time))
     stopifnot(is.integer(resolution))
     m1 <- as.numeric(strftime(round.POSIXt(time, "mins"), "%M"))
@@ -16,24 +19,26 @@
   }
 
 .add_timestamp_scrape_col_at <-
-  function(data, col = "timestamp_scrape", ...) {
+  function(data, col = "timestamp_scrape", value = NULL, ...) {
     stopifnot(is.data.frame(data))
     stopifnot(is.character(col), length(col) == 1, !(col %in% names(data)))
     col <- sym(col)
-    data %>%
-      mutate(!!col := .get_ymdhm(...))
+    if(is.null(value)) {
+      res <-
+        data %>%
+        mutate(!!col := .get_ymdhm(...))
+    } else {
+      res <-
+        data %>%
+        mutate(!!col := value)
+    }
+    res
   }
 
 
 .add_scrape_cols_at <-
   function(data, ...) {
     data %>%
-      .add_timestamp_scrape_col_at()
+      .add_timestamp_scrape_col_at(...)
   }
 
-.finalize_scrape_cols_at <-
-  function(data, ...) {
-    data %>%
-      .add_scrape_cols_at() %>% 
-      .reorder_twitter_cols_at()
-  }

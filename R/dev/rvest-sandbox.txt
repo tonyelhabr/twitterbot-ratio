@@ -1,0 +1,6 @@
+
+selector=#permalink-overlay
+
+outerhtml=<span class="ProfileTweet-actionCountForPresentation" aria-hidden="true">4</span>
+selector=#profile-tweet-action-reply-count-aria-1063549587925991424
+xpath=//*[@id="permalink-overlay-dialog"]/div[3]/div/div/div[1]/div[1]/div/div[4]/div[2]/div[1]/button/span/span

@@ -1,10 +1,53 @@
 
+# TODO: Programmatically figure out .N_SCREEN_NAME?
+# .N_SCREEN_NAME <- 3L
+# .N_SCREEN_NAME <- ifelse(file.exists(config$path_last), import_ratio_last() %>% nrow(), 3L)
+.N_SCREEN_NAME <- 4L
+.MAX_PER_SESSION <- 18000L
+.N_SCALE <- 1L
+# .N_SCALE <- 1L / (.N_SCREEN_NAME)
+.N_SEARCH <- .N_SCALE * .MAX_PER_SESSION %>% floor() %>% as.integer()
+# .N_SEARCH <- .MAX_PER_SESSION
+
+.get_replies_since <-
+  function(screen_name,
+           since_id,
+           ...,
+           q = sprintf("@%s OR to:%s OR %s", screen_name, screen_name, screen_name),
+           # n = 10000L,
+           n = .N_SEARCH,
+           include_rts = FALSE,
+           retryonratelimit = TRUE,
+           token = config$token,
+           verbose = config$verbose_scrape) {
+
+    rtweet::search_tweets(
+      q = q,
+      since_id = since_id,
+      ...,
+      n = n,
+      include_rts = include_rts,
+      retryonratelimit = retryonratelimit,
+      verbose = TRUE,
+      token = token
+    )
+  }
+
+.get_reply_count <-
+  function(data, status_id, ...) {
+
+    data %>%
+      filter(reply_to_status_id == !!status_id) %>%
+      count() %>%
+      pull(n)
+  }
+
 
 .arrange_ratio_df_at <-
   function(data, ...) {
     data %>%
-      group_by(screen_name) %>% 
-      arrange(desc(ratio), .by_group = TRUE) %>% 
+      group_by(screen_name) %>%
+      arrange(desc(ratio), .by_group = TRUE) %>%
       ungroup()
   }
 
@@ -18,7 +61,7 @@
 
 .describe_screen_name <-
   function(tl, ratio, ...) {
-    
+
     nm_ratio <- ratio %>% .pull_distinctly(screen_name)
     nm_tl <- tl %>% .pull_distinctly(screen_name)
     nm_diff1 <- setdiff(nm_ratio, nm_tl)
@@ -28,7 +71,7 @@
       msg <- sprintf("No new tweets to score for some names: %s.", nm_diff_coll)
       message(msg)
     }
-    
+
     if(length(nm_diff2) > 0L) {
       nm_diff_coll <- paste(nm_diff2, sep = "", collapse = ", ")
       msg <- sprintf("New screen name(s) to evaluate: %s.", nm_diff_coll)
@@ -45,95 +88,39 @@
     tl_cnt <-
       tl %>%
       count(screen_name)
-    tl_cnt %>% 
-      mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>% 
-      pull(msg) %>% 
+    tl_cnt %>%
+      mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>%
+      pull(msg) %>%
       purrr::walk(message)
     invisible(tl)
   }
 
-do_get_ratio <-
-  function(tl = NULL,
-           ratio_last = NULL,
-           ...,
-           verbose = config$verbose_scrape) {
-    if (is.null(ratio_last)) {
-      ratio_last <- import_ratio_last()
-    }
-    
-    .validate_ratio_last_df(ratio_last)
-    if (is.null(tl)) {
-      if (verbose) {
-        msg <-
-          "Retrieving latest tweets based on imported most recent ratios/statuses."
-        message(msg)
-      }
-      tl_raw <-
-        ratio_last %>%
-        select(screen_name, status_id) %>%
-        mutate(data =
-                 purrr::pmap(
-                   list(screen_name, status_id),
-                   ~ .get_tl_possibly(user = ..1, since_id = ..2)
-                 ))
-      
-      tl <-
-        tl_raw %>%
-        select(data) %>%
-        unnest(data)
-      tl
-    }
-    .validate_tl_df(tl)
-    
-    # NOTE: Do this to make sure that `tl` is trim (whether it is provided by the user
-    # or generated for the condition `tl = NULL` (even if th `.get_tl_possibly()`
-    # function already calls this function.)).
-    tl <- .select_tl_cols_at(tl)
-    if (verbose) {
-      .describe_screen_name(tl = tl, ratio = ratio_last)
-    }
-    
-    if (verbose) {
-      .describe_tl_before_ratio(tl = tl)
-    }
-    tl %>% export_tl_cache()
+count_replies <-
+  function(tl_filt, ...) {
+    tl1 <-
+      tl_filt %>%
+      arrange(created_at) %>%
+      slice(1)
+
     reply_raw <-
-      tl %>%
-      group_by(screen_name) %>%
-      arrange(created_at, .by_group = TRUE) %>%
-      slice(1) %>%
-      ungroup() %>%
-      mutate(data =
-               purrr::pmap(
-                 list(screen_name, status_id),
-                 ~ .get_replies_since(screen_name = ..1, since_id = ..2)
-               ))
-    reply <-
+      tl1 %>%
+      mutate(
+        data =
+          purrr::pmap(
+            list(screen_name, since_id),
+            ~ .get_replies_since(screen_name = ..1, since_id = ..2)
+          )
+      )
+
+    reply_data <-
       reply_raw %>%
       select(data) %>%
       unnest(data)
-    
-    ratio <-
-      tl %>%
-      mutate(reply_count =
-               purrr::map_int(status_id, ~ .get_reply_count(data = reply, status_id = .x)))
-    
-    ratio_log <-
-      ratio %>%
-      .add_ratio_cols_at() %>%
-      .add_timestamp_scrape_col_at() %>%
-      .arrange_ratio_df_at() %>%
-      .filter_tl_df_at()
-    
-    export_ratio_log(ratio_log)
-    
-    ratio_last_export <-
-      bind_rows(
-        ratio_last,
-        ratio_log) %>%
-      .filter_tl_df_at() %>%
-      .slice_ratio_df_at()
-    
-    export_ratio_last(ratio_last)
-    invisible(ratio_log)
+
+    reply <-
+      tl_filt %>%
+      mutate(
+        reply_count =
+          purrr::map_int(status_id, ~ .get_reply_count(data = reply_data, status_id = .x))
+      )
   }

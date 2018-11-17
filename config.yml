@@ -3,11 +3,23 @@ default:
   path_log: "data/scrape-log.csv"
   path_tl_cache: "data/tl-cache.csv"
 
-  n_hour_lag: 12
+  n_hour_lag_scrape: 12
+  n_tl_new: 100
+
+  token: !expr rtweet::get_token()
 
   verbose_scrape: true
+  verbose_post: true
   verbose_file: false
   backup_file: true
+
+  screen_name:
+    - RealSkipBayless
+    - stephenasmith
+    - NateSilver538
+    - bomani_jones
+    - BillSimmons
+    - PFTcommenter
 
 production:
 
