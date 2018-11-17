@@ -1,12 +1,12 @@
 default:
   path_screen_name: "data-raw/screen_name.csv"
-  path_ratio_last_scrape: "data/ratio-last.csv"
+  path_ratio_last_scrape: "data/ratio-last-scrape.csv"
   path_ratio_log: "data/ratio-log.csv"
   path_tl_cache: "data/tl-cache.csv"
-  path_ratio_last_post: "data/ratio-post.csv"
+  path_ratio_last_post: "data/ratio-last-post.csv"
 
   n_hour_lag_scrape: 12
-  n_tl_new: 100
+  n_tl_new: 1000
 
   cache: true
 

@@ -124,7 +124,7 @@
       stop(msg, call. = FALSE)
     }
     # data <- data %>% rtweet:::unprepend_ids()
-    data <- path %>% rtweet::read_twitter_csv()
+    data <- rtweet::read_twitter_csv(path)
     data <-
       data %>%
       .reconvert_datetime_cols() %>%
@@ -169,7 +169,7 @@ import_screen_name <-
   purrr::possibly(import_screen_name, otherwise = NULL)
 
 .export_twitter_file <-
-  function(data, ..., path, append, backup = config$backup_file, verbose = config$verbose_file) {
+  function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
     if (backup) {
       path_backup <- .create_backup(path = path)
       .clean_backup(path = path)
@@ -177,7 +177,7 @@ import_screen_name <-
     # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
     # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
     data <- data %>% rtweet:::prepend_ids()
-    write_csv(data, path, append = append, ...)
+    write_csv(data, path, append = append, na = na, ...)
     if (verbose) {
       msg <- sprintf("Exported data to %s at %s.", path, Sys.time())
       message(msg)
@@ -186,17 +186,39 @@ import_screen_name <-
   }
 
 export_ratio_last_scrape <-
-  purrr::partial(.export_twitter_file, path = config$path_ratio_last_scrape, append = FALSE, backup = FALSE)
-export_ratio_log <-
-  purrr::partial(.export_twitter_file, path = config$path_ratio_log, append = file.exists(config$path_ratio_log), backup = FALSE)
+  purrr::partial(
+    .export_twitter_file,
+    path = config$path_ratio_last_scrape,
+    append = FALSE,
+    backup = FALSE
+  )
+export_ratio_log_scrape <-
+  purrr::partial(
+    .export_twitter_file,
+    path = config$path_ratio_log,
+    append = file.exists(config$path_ratio_log),
+    backup = FALSE
+  )
+export_ratio_log_post <-
+  purrr::partial(
+    .export_twitter_file,
+    path = config$path_ratio_log,
+    append = FALSE,
+    backup = FALSE
+  )
 export_ratio_last_post <-
-  purrr::partial(.export_twitter_file, path = config$path_ratio_last_post, append = FALSE, backup = FALSE)
+  purrr::partial(
+    .export_twitter_file,
+    path = config$path_ratio_last_post,
+    append = FALSE,
+    backup = FALSE
+  )
 
 export_tl_cache <-
   function(data,
-             screen_name,
-             ...,
-             append = FALSE,
+           screen_name,
+           ...,
+           append = FALSE,
              backup = TRUE,
              path = config$path_tl_cache,
              file = tools::file_path_sans_ext(path),
@@ -237,7 +259,7 @@ export_tl_cache <-
 
     res <-
       data %>%
-      filter(!is.na(!!col_filt_sym))
+      filter(!is.na(!!col_filt_sym) & (!!col_filt_sym != ""))
 
     if(nrow(res) == 0L) {
       if(verbose) {
@@ -264,5 +286,20 @@ export_tl_cache <-
   purrr::partial(.convert_ratio_log_to_last_file, col_filt = "ratio")
 # # NOTE: Change `col_sort` to "timestamp_post" here?
 .convert_ratio_log_to_last_post <-
-  purrr::partial(.convert_ratio_log_to_last_file, col_filt = "status_id_post")
+  purrr::partial(.convert_ratio_log_to_last_file, col_filt = "text_post")
+
+
+.pre_do_twitter <-
+  function(screen_name = NULL, ...) {
+    if(is.null(screen_name)) {
+      screen_name <- .import_screen_name_possibly()
+      if(is.null(screen_name)) {
+        msg <- sprintf("Could not import `screen_name` data.")
+        stop(msg, call. = FALSE)
+      }
+    }
+    # TODO: `validate_screen_name(screen_name)`.
+    # .validate_screen_name(screen_name)
+    screen_name
+  }
 

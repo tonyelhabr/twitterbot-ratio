@@ -78,13 +78,20 @@
       message(msg)
     }
 
-    rtweet::get_timeline(user = user, n = n, token = token, ...) %>%
-      .filter_tweet_type() %>%
-      .select_tl_cols_at()
+    suppressMessages(
+      rtweet::get_timeline(user = user, n = n, token = token, ...) %>%
+        .filter_tweet_type() %>%
+        .select_tl_cols_at()
+    )
   }
 
 .get_tl_first_possibly <-
   purrr::possibly(.get_tl_first, otherwise = NULL)
+
+.get_tl_my <-
+  purrr::partial(.get_tl_first, user = "punditratio")
+
+.get_tl_my_possibly <- purrr::possibly(.get_tl_my, otherwise = NULL)
 
 .get_tl_since <-
   function(user, since_id, ..., token = config$token, verbose = config$verbose_scrape) {
@@ -93,13 +100,16 @@
       message(msg)
     }
 
-    rtweet::get_timeline(user = user, since_id = since_id, token = token, ...) %>%
-      .filter_tweet_type() %>%
-      .select_tl_cols_at()
+    suppressMessages(
+      rtweet::get_timeline(user = user, since_id = since_id, token = token, ...) %>%
+        .filter_tweet_type() %>%
+        .select_tl_cols_at()
+    )
   }
 
 .get_tl_since_possibly <-
   purrr::possibly(.get_tl_since, otherwise = NULL)
+
 
 .filter_tl_bytime <-
   function(data, n_hour_lag_scrape = config$n_hour_lag_scrape, ...) {
@@ -114,7 +124,7 @@ do_scrape_ratio <-
            ratio_log = NULL,
            ratio_last_scrape = NULL,
            ...,
-           cache = config$cahce,
+           cache = config$cache,
            verbose = config$verbose_scrape) {
 
     # screen_name = "RealSkipBayless"
@@ -122,6 +132,7 @@ do_scrape_ratio <-
     # since_id = NULL
     # ratio_log = NULL
     # ratio_last_scrape = NULL
+    # cache = config$cache
     # verbose = config$verbose_scrape
 
     # message(rep("-", getOption("width")))
@@ -142,32 +153,24 @@ do_scrape_ratio <-
 
     .validate_ratio_df(ratio_log)
 
-    ratio_last_scrape <- .import_ratio_last_scrape_possibly()
-
     if (is.null(ratio_last_scrape)) {
-      ratio_last_scrape <- .convert_ratio_log_to_last_scrape(ratio_log)
-      if (verbose) {
-        msg <-
-          sprintf("Creating missing `ratio_last_scrape` file from `ratio_log`.")
-        message(msg)
-      }
-      export_ratio_last_scrape(ratio_last_scrape)
-    } else {
-      n_ratio_last_scrape <- nrow(ratio_last_scrape)
-      n_ratio_log <- nrow(ratio_log)
-      if(n_ratio_last_scrape > n_ratio_log) {
-        msg <-
-          sprintf(
-            paste0(
-            "`ratio_last_scrape` has more rows (%d) than `ratio_log` (%d). ",
-            "Something unexpected happened."),
-            n_ratio_last_scrape,
-            n_ratio_log
-          )
-        stop(msg, call. = FALSE)
+      ratio_last_scrape <- .import_ratio_last_scrape_possibly()
+
+      if (!is.null(ratio_last_scrape)) {
+        if (verbose) {
+          msg <-
+            sprintf("Creating missing `ratio_last_scrape` file from `ratio_log`.")
+          message(msg)
+        }
+        ratio_last_scrape <- .convert_ratio_log_to_last_scrape(ratio_log)
+        export_ratio_last_scrape(ratio_last_scrape)
       }
     }
 
+    .compare_n_row_le(
+      data1 = ratio_last_scrape,
+      data2 = ratio_log
+    )
     .validate_ratio_df(ratio_last_scrape)
     .validate_ratio_onerowpergrp_df(ratio_last_scrape)
 
@@ -187,7 +190,7 @@ do_scrape_ratio <-
       }
 
       if(is.null(tl)) {
-        msg <- sprintf("Did not find any tweets for %s.", screen_name)
+        msg <- sprintf("Did not find any tweets for \"%s\".", screen_name)
         message(msg)
         return(NULL)
       }
@@ -209,7 +212,9 @@ do_scrape_ratio <-
       message(msg)
     }
 
-    path_tl_cache <- export_tl_cache(tl_filt, screen_name)
+    if(cache) {
+      path_tl_cache <- export_tl_cache(tl_filt, screen_name)
+    }
 
     reply <-
       tl_filt %>%
@@ -227,7 +232,7 @@ do_scrape_ratio <-
       .add_timestamp_scrape_col_at() %>%
       arrange(desc(ratio))
 
-    path_ratio_log <- export_ratio_log(ratio_log_export)
+    path_ratio_log <- export_ratio_log_scrape(ratio_log_export)
 
     ratio_last_scrape_export <-
       bind_rows(

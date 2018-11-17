@@ -52,8 +52,7 @@
           ),
           text_post
         )
-      return(text_post)
-    }
+    } else {
 
     if(!is.null(ratio_last_post)) {
       # NOTE: This data set should only have one record per screen name,
@@ -110,16 +109,16 @@
           chr_emoji_fire
         )
     }
+    }
 
     if(reply) {
       text_post <-
         sprintf(
-          "%s. %s.",
+          "%s %s",
           text_post,
           .make_twitter_url_reply(.screen_name = screen_name, .status_id = status_id)
         )
     }
-
     text_post
   }
 
@@ -154,7 +153,6 @@
       resp <-
         rtweet::post_tweet(
           status = text_post,
-          in_reply_to_status_id = status_id,
           token = token
         )
       if (verbose) {
@@ -181,10 +179,10 @@ do_post_ratio <-
            ...,
            verbose = config$verbose_post) {
 
-    screen_name = "RealSkipBayless"
-    ratio_log = NULL
-    ratio_last_post = NULL
-    verbose = config$verbose_post
+    # screen_name = "PFTCommenter"
+    # ratio_log = NULL
+    # ratio_last_post = NULL
+    # verbose = config$verbose_post
 
     # if(verbose) {
     #   if(interactive()) {
@@ -193,6 +191,8 @@ do_post_ratio <-
     #   }
     # }
 
+    # TODO (Long-term): Write a function to do the same pre-processing for the
+    # `do_scrape/post_ratio()` functions.
     message(rep("-", 80L))
     stopifnot(length(screen_name) == 1L)
 
@@ -206,40 +206,61 @@ do_post_ratio <-
 
     .validate_ratio_df(ratio_log)
 
-    ratio_last_post <- .import_ratio_last_post_possibly()
-
     if (is.null(ratio_last_post)) {
-      ratio_last_post <- .convert_ratio_log_to_last_post(ratio_log)
-      if (verbose) {
-        msg <-
-          sprintf("Creating missing `ratio_last_post` file from `ratio_log`.")
-        message(msg)
+      ratio_last_post <- .import_ratio_last_post_possibly()
+      if (is.null(ratio_last_post)) {
+        if (verbose) {
+          msg <-
+            sprintf("Creating missing `ratio_last_post` file from `ratio_log`.")
+          message(msg)
+        }
+        ratio_last_post <- .convert_ratio_log_to_last_post(ratio_log)
+        export_ratio_last_post(ratio_last_post)
       }
-      export_ratio_last_post(ratio_last_post)
     }
-
+    .compare_n_row_le(
+      data1 = ratio_last_post,
+      data2 = ratio_log
+    )
     .validate_ratio_df(ratio_last_post)
     .validate_ratio_onerowpergrp_df(ratio_last_post)
 
     ratio_log_filt <- ratio_log
+
+    # TODO: What about the altnerative?
     if (!is.null(screen_name)) {
+      .screen_name <- screen_name
       ratio_log_filt <-
         ratio_log_filt %>%
-        filter(screen_name == !!screen_name)
+        filter(screen_name == .screen_name)
     }
 
     ratio_log_filt <-
       ratio_log_filt %>%
-      filter(!considered, !posted) %>%
-      mutate(considered = 1L)
+      filter(considered == 0L && posted == 0L)
+
+    if(nrow(ratio_log_filt) == 0L) {
+      if(verbose) {
+        msg <- sprintf("No tweet to post about  \"%s\".", screen_name)
+        message(msg)
+        return(NULL)
+      }
+    }
 
     ratio_topost_raw <-
       ratio_log_filt %>%
       .slice_ratio_max()
 
-    ratio_notposted <-
-      ratio_log_filt %>%
-      anti_join(ratio_topost)
+    suppressMessages(
+      ratio_notposted_raw <-
+        ratio_log %>%
+        anti_join(ratio_topost_raw)
+    )
+
+    .compare_n_row_eq(
+      data1 = ratio_log,
+      data2 = bind_rows(ratio_topost_raw, ratio_notposted_raw)
+    )
 
     ratio_topost <-
       ratio_topost_raw %>%
@@ -257,51 +278,58 @@ do_post_ratio <-
           )
       )
 
-    ratio_wasposted_raw <-
-      ratio_topost %>%
-      mutate(
-        status_id_post =
-          purrr::pmap_chr(
-            list(screen_name, status_id, text_post),
-            ~.post_ratio(
-              screen_name = ..1,
-              status_id = ..2,
-              text_post = ..3
+    # NOTE: Be careful with posting!
+    if(TRUE) {
+      ratio_wasposted_raw <-
+        ratio_topost %>%
+        mutate(
+          status_id_post =
+            purrr::pmap_chr(
+              list(screen_name, status_id, text_post),
+              ~.post_ratio(
+                screen_name = ..1,
+                status_id = ..2,
+                text_post = ..3
+              )
             )
-          )
-      )
-
-    ratio_wasposted <-
-      ratio_wasposted_raw %>%
-      # mutate(posted = 1L)
-      mutate(posted = 1L, timestamp_posted = Sys.time())
+        )
+    }
 
     # NOTE: I believe that the columns of these data sets
     # should already be in the correct order.
-    ratio_notposted <- .select_ratio_cols_at(ratio_notposted)
-    ratio_wasposted <- .select_ratio_cols_at(ratio_wasposted)
+    ratio_wasposted <-
+      ratio_wasposted_raw %>%
+      mutate(posted = 1L, timestamp_post = Sys.time()) %>%
+      .select_ratio_cols_at()
 
-    ratio_log_export <-
-      ratio_log %>%
-      mutate(rn = row_number()) %>%
-      select(one_of(c("rn", .COLS_RATIO_BASE_ORDER))) %>%
-      left_join(
-        bind_rows(
-          ratio_notposted,
-          ratio_wasposted
-        )
-      ) %>%
-      arrange(rn) %>%
-      select(-rn)
+    ratio_notposted <-
+      ratio_notposted_raw %>%
+      mutate(posted = 0L) %>%
+      .select_ratio_cols_at()
 
-    stopifnot(nrow(ratio_log) != nrow(ratio_log_export))
+    suppressMessages(
+      ratio_log_export <-
+        ratio_log %>%
+        mutate(rn = row_number()) %>%
+        select(one_of(c("rn", .COLS_RATIO_BASE_ORDER))) %>%
+        inner_join(
+          bind_rows(ratio_notposted, ratio_wasposted)
+        ) %>%
+        arrange(rn) %>%
+        select(-rn)
+    )
 
-    path_ratio_log <- export_ratio_log(ratio_log_export)
+    .compare_n_row_eq(
+      data1 = ratio_log_export,
+      data2 = ratio_log
+    )
+
+    path_ratio_log <- export_ratio_log_post(ratio_log_export)
 
     ratio_last_post_export <- .convert_ratio_log_to_last_post(ratio_log_export)
     path_ratio_last_post <- export_ratio_last_post(ratio_last_post_export)
 
-    invisible(ratio_post)
+    invisible(ratio_wasposted)
   }
 
 .do_post_ratio_possibly <-
@@ -309,16 +337,8 @@ do_post_ratio <-
 
 do_post_ratio_all <-
   function(screen_name = NULL, ...) {
-    if(is.null(screen_name)) {
-      screen_name <- .import_screen_name_possibly()
-      if(is.null(screen_name)) {
-        msg <- sprintf("Could not import `screen_name` data.")
-        stop(msg, call. = FALSE)
-      }
-    }
-
-    # TODO: `validate_screen_name(screen_name)`.
-    # NOTE: Remember that can't run function with dots interactively.
+    .pre_do_twitter(screen_name = screen_name)
     # purrr::walk(screen_name, ~.do_post_ratio_possibly(screen_name = .x, ...))
     purrr::walk(screen_name, ~.do_post_ratio_possibly(screen_name = .x))
   }
+
