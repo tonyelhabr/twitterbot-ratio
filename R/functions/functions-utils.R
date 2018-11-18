@@ -26,7 +26,7 @@
         sprintf("Backup file %s cannot be created because %s cannot be found!",
                 path_backup,
                 path)
-      message(msg, call. = FALSE)
+      message(msg)
       return(path_backup)
     }
 
@@ -66,7 +66,7 @@
     if (n < n_keep) {
       if (n == 0L) {
         msg <- sprintf("No backup files to delete.")
-        message(msg, call. = FALSE)
+        message(msg)
         return(path)
       }
       msg <-

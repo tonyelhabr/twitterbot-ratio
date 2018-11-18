@@ -88,10 +88,10 @@
 .get_tl_first_possibly <-
   purrr::possibly(.get_tl_first, otherwise = NULL)
 
-.get_tl_my <-
+.get_tl_self <-
   purrr::partial(.get_tl_first, user = "punditratio")
 
-.get_tl_my_possibly <- purrr::possibly(.get_tl_my, otherwise = NULL)
+.get_tl_self_possibly <- purrr::possibly(.get_tl_self, otherwise = NULL)
 
 .get_tl_since <-
   function(user, since_id, ..., token = config$token, verbose = config$verbose_scrape) {
@@ -124,7 +124,7 @@ do_scrape_ratio <-
            ratio_log = NULL,
            ratio_last_scrape = NULL,
            ...,
-           cache = config$cache,
+           cache = config$cache_tl,
            verbose = config$verbose_scrape) {
 
     # screen_name = "RealSkipBayless"
@@ -251,17 +251,8 @@ do_scrape_ratio <-
 
 do_scrape_ratio_all <-
   function(screen_name = NULL, ...) {
-    if(is.null(screen_name)) {
-      screen_name <- .import_screen_name_possibly()
-      if(is.null(screen_name)) {
-        msg <- sprintf("Could not import `screen_name` data.")
-        stop(msg, call. = FALSE)
-      }
-    }
-
-    # TODO: `validate_screen_name(screen_name)`.
-    # NOTE: Remember that can't run function with dots interactively.
-    # purrr::walk(screen_name, ~.do_scrape_ratio_possibly(screen_name = .x, ...))
-    purrr::walk(screen_name, ~.do_scrape_ratio_possibly(screen_name = .x))
+    screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
+    # purrr::walk(screen_name, ~.do_scrape_ratio_possibly(screen_name = .x))
+    purrr::walk(screen_name, ~do_scrape_ratio(screen_name = .x))
   }
 

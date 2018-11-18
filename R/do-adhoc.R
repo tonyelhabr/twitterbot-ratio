@@ -8,7 +8,7 @@
 #   ~do_scrape_ratio(.x)
 # )
 
-tl_my <- .get_tl_my_possibly()
-tl_my
-status_id_destroy <- tl_my %>% slice(2) %>% pull(status_id)
+tl_self <- .get_tl_self_possibly()
+tl_self
+status_id_destroy <- tl_self %>% slice(2) %>% pull(status_id)
 rtweet::post_tweet(destroy_id = status_id_destroy)

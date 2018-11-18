@@ -5,6 +5,12 @@
     "\U0001f525"
   }
 
+# Reference: rtweet::emojis %>% filter(description %>% str_detect("fearful face"))
+.get_chr_emoji_fear <-
+  function() {
+    "\U0001f628"
+  }
+
 .slice_ratio_max <-
   function(data, ...) {
     res <-
@@ -44,13 +50,15 @@
       ratio_log %>%
       .filter_ratio_log_posted(.screen_name = screen_name, .status_id = status_id)
     if(nrow(ratio_pastposted) == 0L) {
+      chr_emoji_fear <- .get_chr_emoji_fear()
       text_post <-
         sprintf(
           paste0(
             "%s This is the first time I've scored you. ",
-            "Be aware of your ratio with future tweets!"
+            "Be aware of your ratio with future tweets! %s"
           ),
-          text_post
+          text_post,
+          chr_emoji_fear
         )
     } else {
 
@@ -337,8 +345,7 @@ do_post_ratio <-
 
 do_post_ratio_all <-
   function(screen_name = NULL, ...) {
-    .pre_do_twitter(screen_name = screen_name)
-    # purrr::walk(screen_name, ~.do_post_ratio_possibly(screen_name = .x, ...))
+    screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
     purrr::walk(screen_name, ~.do_post_ratio_possibly(screen_name = .x))
   }
 

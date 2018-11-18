@@ -8,7 +8,7 @@ default:
   n_hour_lag_scrape: 12
   n_tl_new: 1000
 
-  cache: true
+  cache_tl: false
 
   post_reply: true
   post_retweet: false

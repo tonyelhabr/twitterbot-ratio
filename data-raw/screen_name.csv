@@ -1,7 +1,52 @@
-screen_name
-RealSkipBayless
-stephenasmith
-NateSilver538
-bomani_jones
-BillSimmons
-PFTcommenter
+screen_name,employer,category1,category2,user_sentiment,audience_sentiment
+RealSkipBayless,Fox Sports,sports,,debate,mockery
+stephenasmith,ESPN,sports,,neutral,mockery
+NateSilver538,FiveThirtyEight,sports,politics,neutral,debate
+bomani_jones,ESPN,sports,,debate,debate
+BillSimmons,The Ringer,sports,culture,debate,negative
+PFTcommenter,Bar Stool Sports,sports,,fun,supportive
+darrenrovell,ESPN,sports,,fun,mockery
+WhitlockJason,Fox Sports,sports,,debate,negative
+richarddeitsch,The Athletic,sports,,neutral,debate
+jemelehill,ESPN,sports,politics,debate,negative
+mcuban,,sports,technology,neutral,debate
+bykevinclark,The Ringer,sports,,fun,neutral
+DannyBKelly,The Ringer,sports,,fun,neutral
+minakimes,ESPN,sports,,fun,supportive
+BarstoolBigCat,,sports,,fun,supportive
+hen_ease,The Ringer,sports,,fun,mockery
+katienolan,ESPN,sports,culture,fun,debate
+SIChrisMannix,Yahoo,sports,,neutral,neutral
+HowardBeck,Yahoo,sports,,neutral,neutral
+ShannonSharpe,Fox Sports,sports,,debate,mockery
+Chris_Broussard,Fox Sports,sports,,debate,mockery
+SheaSerrano,The Ringer,sports,culture,fun,supportive
+Stephania_ESPN,ESPN,sports,,neutral,neutral
+MatthewBerryTMR,ESPN,sports,,sarcastic,negative
+fieldyates,ESPN,sports,,neutral,neutral
+RobParkerFS1,Fox Sports,sports,,debate,mockery
+criscarter80,Fox Sports,sports,,debate,debate
+getnickwright,Fox Sports,sports,,debate,debate
+markschlereth,Fox Sports,sports,,debate,debate
+Buck,Fox Sports,sports,,neutral,mockery
+TroyAikman,Fox Sports,sports,,neutral,mockery
+MikePereira,Fox Sports,sports,,neutral,debate
+ErinAndrews,Fox Sports,sports,,neutral,neutral
+GottliebShow,CBS Sports,sports,,debate,debate
+Coach_Leach,,sports,,debate,debate
+ChrisBHaynes,Yahoo,sports,,neutral,neutral
+wojespn,ESPN,sports,,neutral,neutral
+RicBucher,NBC,sports,,neutral,neutral
+MarcJSpearsESPN,ESPN,sports,,neutral,neutral
+McShay13,ESPN,sports,,neutral,neutral
+MelKiperESPN,ESPN,sports,,neutral,neutral
+IzGutierrez,ESPN,sports,,neutral,neutral
+MarkJackson13,ESPN,sports,,neutral,debate
+RealMikeWilbon,ESPN,sports,,neutral,debate
+WindhorstESPN,ESPN,sports,,neutral,debate
+davidaldridgedc,NBA,sports,,neutral,debate
+kevinarnovitz,ESPN,sports,,neutral,debate
+sheridanhoops,,sports,,debate,debate
+ReggieMillerTNT,TNT,sports,,neutral,neutral
+chadfordinsider,ESPN,sports,,neutral,neutral
+TheSteinLine,New York Times,sports,,neutral,neutral

@@ -1,5 +1,13 @@
 
 # Reference: sports-predict project (functions-scrape) for `reorder*()` and `select*()` functions below.
+.COLS_SCREEN_NAME_ORDER <-
+  c(
+    "screen_name",
+    "category1",
+    "category2",
+    "user_sentiment",
+    "audience_sentiment"
+  )
 .COLS_TL_ORDER <-
   c(
     "user_id",
@@ -33,6 +41,7 @@
     .COLS_RATIO_SCORE_ORDER
   )
 
+# validate_xxx_df ----
 .validate_twitter_df <-
   function(data, cols, ...) {
     stopifnot(is.data.frame(data))
@@ -42,6 +51,7 @@
 
 .validate_ratio_df <- purrr::partial(.validate_twitter_df, cols = .COLS_RATIO_ORDER)
 .validate_tl_df <- purrr::partial(.validate_twitter_df, cols = .COLS_TL_ORDER)
+.validate_screen_name_df <- purrr::partial(.validate_twitter_df, cols = .COLS_SCREEN_NAME_ORDER)
 
 .validate_twitter_onerowpergrp_df <-
   function(data, col, ...) {
@@ -63,6 +73,12 @@
 .validate_ratio_onerowpergrp_df <-
   purrr::partial(.validate_twitter_onerowpergrp_df, col = "screen_name")
 
+.validate_screen_name <-
+  function(data, ...) {
+    stopifnot(is.character(data))
+  }
+
+# reorder_xxx_cols_at  ----
 .reorder_twitter_cols_at <-
   function(data, ..., col_names_order) {
     col_names <- names(data)
@@ -79,6 +95,7 @@
 .reorder_ratio_cols_at <-
   purrr::partial(.reorder_twitter_cols_at, col_names_order = .COLS_RATIO_ORDER)
 
+# select_xxx_cols_at ----
 .select_twitter_cols_at <-
   function(data, ..., col_names, col_names_order = col_names) {
     col_names_fct <- factor(col_names, levels = col_names_order)
@@ -89,34 +106,35 @@
 .select_ratio_cols_at <-
   purrr::partial(.select_twitter_cols_at, col_names = .COLS_RATIO_ORDER)
 
-
-.reconvert_datetime_cols <-
+# reconvert_xxx_cols_at_at ----
+.reconvert_datetime_cols_at <-
   function(data, cols = str_subset(names(data), "^created_at$|^timestamp"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(lubridate::ymd_hms))
   }
 
-.reconvert_integer_cols <-
+.reconvert_integer_cols_at <-
   function(data, cols = str_subset(names(data), "count|^considered$|^posted$"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.integer)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., 0L)))
   }
 
-.reconvert_double_cols <-
+.reconvert_double_cols_at <-
   function(data, cols = str_subset(names(data), "^ratio"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.double)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., 0)))
   }
 
-.reconvert_chr_cols <-
+.reconvert_chr_cols_at <-
   function(data, cols = str_subset(names(data), "_id|^text_|screen_name"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.character)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., "")))
   }
 
+# import_xxx ----
 .import_ratio_file <-
   function(..., path, verbose = config$verbose_file) {
     if (!file.exists(path)) {
@@ -127,10 +145,10 @@
     data <- rtweet::read_twitter_csv(path)
     data <-
       data %>%
-      .reconvert_datetime_cols() %>%
-      .reconvert_chr_cols() %>%
-      .reconvert_integer_cols() %>%
-      .reconvert_double_cols()
+      .reconvert_datetime_cols_at() %>%
+      .reconvert_chr_cols_at() %>%
+      .reconvert_integer_cols_at() %>%
+      .reconvert_double_cols_at()
     if (verbose) {
       msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
       message(msg)
@@ -151,23 +169,60 @@ import_ratio_last_post <-
 .import_ratio_last_post_possibly <-
   purrr::possibly(import_ratio_last_post, otherwise = NULL)
 
-import_screen_name <-
+import_screen_name_all <-
   function(..., path = config$path_screen_name, verbose = config$verbose_file) {
     if (!file.exists(path)) {
       msg <- sprintf("%s does not exist.", path)
       stop(msg, call. = FALSE)
     }
-    data <- path %>% readr::read_csv()
+    data <- readr::read_csv(path)
+    # data <- .flatten_screen_name(data)
     if (verbose) {
       msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
       message(msg)
     }
-    pull(data, 1)
+    invisible(data)
   }
 
-.import_screen_name_possibly <-
-  purrr::possibly(import_screen_name, otherwise = NULL)
+.flatten_screen_name <-
+  function(data, ...) {
+    pull(data, screen_name)
+  }
 
+.filter_screen_name <-
+  function(data, ...) {
+    stopifnot(is.data.frame(data))
+    data %>%
+      filter(category == "sports") %>%
+      filter(!user_sentiment %in% c("light-humored", "positive")) %>%
+      filter(audience_sentiment %in% c("negative", "mockery", "two-sided"))
+  }
+
+import_screen_name_scrape_ratio <-
+  function(...) {
+    data <- import_screen_name_all()
+    data %>%
+      .filter_screen_name() %>%
+      .flatten_screen_name()
+  }
+
+.import_screen_name_scrape_ratio_possibly <-
+  purrr::possibly(import_screen_name_scrape_ratio, otherwise = NULL)
+
+import_screen_name_post <-
+  function(...) {
+    ratio_log <- import_ratio_log()
+    data <-
+      ratio_log %>%
+      distinct(screen_name)
+    data %>%
+      .flatten_screen_name()
+  }
+
+.import_screen_name_scrape_ratio_possibly <-
+  purrr::possibly(import_screen_name_scrape_ratio, otherwise = NULL)
+
+# export_xxx ----
 .export_twitter_file <-
   function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
     if (backup) {
@@ -234,7 +289,7 @@ export_tl_cache <-
     )
   }
 
-
+# convert_xxx ----
 # TODO: Implement plural version of `col_filt`?
 .convert_ratio_log_to_last_file <-
   function(data,
@@ -288,18 +343,22 @@ export_tl_cache <-
 .convert_ratio_log_to_last_post <-
   purrr::partial(.convert_ratio_log_to_last_file, col_filt = "text_post")
 
-
-.pre_do_twitter <-
+# do_xxx ----
+.preprocess_do_action_ratio <-
   function(screen_name = NULL, ...) {
     if(is.null(screen_name)) {
-      screen_name <- .import_screen_name_possibly()
-      if(is.null(screen_name)) {
-        msg <- sprintf("Could not import `screen_name` data.")
-        stop(msg, call. = FALSE)
-      }
+      screen_name <- import_screen_name_scrape_ratio()
     }
-    # TODO: `validate_screen_name(screen_name)`.
     # .validate_screen_name(screen_name)
-    screen_name
+    invisible(screen_name)
   }
+
+# TODO: Use these after all functions are "stable"/"finalized" because
+# these are very abstract.
+.do_action_ratio <-
+  function(screen_name = NULL, ..., .f) {
+    screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
+    purrr::walk(screen_name,, ~.f(.x, ...)
+  }
+
 

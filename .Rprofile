@@ -27,3 +27,5 @@ invisible(sapply(paths_funcs, source))
 rm("paths_funcs")
 
 config <- config::get()
+
+screen_name <- import_screen_name_all()
