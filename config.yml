@@ -7,17 +7,33 @@ default:
   path_tl_cache: "data/tl-cache.csv"
 
   path_ratio_last_post: "data/ratio-last-post.csv"
-  path_ratio_log_post: "data/ratio-log-post.csv" # TODO: Use this?
+
+  # Note: `path_ratio_log_post` is not currently used.
+  path_ratio_log_post: "data/ratio-log-post.csv"
 
   n_hour_lag_scrape: 12
   n_tl_new: 100
 
   tl_cache: true
 
-  post_delay: false
+  # Note: `post_delay` prevents the `.create_post()` function from being called.
+  # Note: It is recommended to set this to true and leave the other `post_*` parameters
+  # as they would otherwise be defined.
+  post_delay: true
+
+  # NOTE: `post_status_id_sentinel` allows for the `.create_post()` function to be called, and is used
+  # in the case that the `post_reply`, `post_retweet`, and `post_favorite` are all
+  # set to `false` (i.e. nothing is posted). In this case, this value
+  # tells the program not to record anything as "posted" (even though `text_post`
+  # is generated). It will cause the program to revert potential updates to the
+  # data in `path_ratio_log_scrape` and `path_ratio_last_post`.
+  # Additionally, this value supplements the usage of `post_delay` = `true`, so that
+  # actions that would occur after posting a tweet get run. This is useful
+  # for checking that the code would work when it comes time to actually make the post.
+  post_status_id_sentinel: "-42"
 
   post_reply: true
-  post_retweet: false
+  post_retweet: true
   post_favorite: true
 
   verbose_scrape: true

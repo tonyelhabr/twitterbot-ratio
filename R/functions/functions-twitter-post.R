@@ -184,6 +184,7 @@
            reply = config$post_reply,
            retweet = config$post_retweet,
            favorite = config$post_favorite,
+           sentinel = config$post_status_id_sentinel,
            token = config$token,
            verbose = config$verbose_post) {
     # # Debugging...
@@ -191,14 +192,25 @@
     # retweet = FALSE
     # favorite = FALSE
 
-    # NOTE: Setting a default value.
+    # NOTE: This is somewhat similar to `.preprocess_compare_n_rows()`.
     if(sum(c(favorite, retweet, reply), na.rm = TRUE) < 1) {
-      return(invisible(""))
+      if(verbose) {
+        msg <-
+          sprintf(
+            paste0(
+              "`reply`, `retweet`, and `favorite` are each `FALSE`. ",
+              "Returning `sentinel` (for `status_id_post`) for \"%s\"."
+            ),
+            screen_name
+          )
+        message(msg)
+      }
+      return(invisible(sentinel))
     }
     if (favorite) {
       resp <- rtweet::post_favorite(status_id, token = token)
     }
-    if (retweet && !reply) {
+    if (retweet) {
       resp <-
         rtweet::post_tweet(
           status = text_post,
@@ -226,7 +238,7 @@
     # if(!is.null(resp)) {
     #   httr::warn_for_status(resp)
     # }
-    # TODO: Get the status_id of the tweet?
+    # TODO: Get the status_id of the tweet (with a function run after `.do_post_ratio()`?
     res <- ""
     invisible(res)
   }
@@ -239,6 +251,7 @@
            ratio_last_post = NULL,
            ...,
            delay = config$post_delay,
+           sentinel = config$post_status_id_sentinel,
            verbose = config$verbose_post) {
 
     # screen_name = "PFTCommenter"
@@ -282,7 +295,7 @@
 
     ratio_log_scrape_filt <- ratio_log_scrape
 
-    # TODO: What about the altnerative?
+    # TODO: What about the alternative?
     if (!is.null(screen_name)) {
       .screen_name <- screen_name
       ratio_log_scrape_filt <-
@@ -338,51 +351,81 @@
       msg <-
         sprintf(
           paste0(
-            # "If `delay` were set to `TRUE`, the message that would have been posted is:\n",
+            "If `delay` were set to `TRUE`, the message that would have been posted is:\n",
             "%s"
           ),
           text_post
         )
       message(msg)
-      return(ratio_topost)
+      # Note: Instead of returning, try out the rest of the code.
+      # return(ratio_topost)
+      ratio_wasposted_raw <- mutate(ratio_topost, status_id_post = sentinel)
 
-    }
+    } else {
 
-    ratio_wasposted_raw <-
-      ratio_topost %>%
-      mutate(
-        status_id_post =
-          purrr::pmap_chr(
-            list(screen_name, status_id, text_post),
-            ~.ratio_post(
-              screen_name = ..1,
-              status_id = ..2,
-              text_post = ..3
+      ratio_wasposted_raw <-
+        ratio_topost %>%
+        mutate(
+          status_id_post =
+            purrr::pmap_chr(
+              list(screen_name, status_id, text_post),
+              ~.ratio_post(
+                screen_name = ..1,
+                status_id = ..2,
+                text_post = ..3
+              )
             )
-          )
-      )
+        )
+    }
 
     suppressMessages(
       ratio_log_scrape_export <-
         ratio_log_scrape %>%
         mutate(rn = row_number()) %>%
-        select(one_of(c("rn", .COLS_RATIO_BASE_ORDER))) %>%
         left_join(
           bind_rows(
-            ratio_notposted_raw %>% mutate(posted = 1L),
-            ratio_wasposted_raw %>% mutate(posted = 0L)
+            ratio_wasposted_raw %>% mutate(posted = 1L),
+            ratio_notposted_raw %>% mutate(posted = 0L)
             ) %>%
-            .select_ratio_cols_at() %>%
-            mutate(considered = 1L, timestamp_post = Sys.time())
+            mutate(considered = 1L, timestamp_post = Sys.time()) %>%
+            .select_ratio_cols_at(),
+          by = .COLS_RATIO_BASE_ORDER,
+          suffix = c("", "_y")
         ) %>%
+        mutate(
+          considered = coalesce(considered_y, considered),
+          posted = coalesce(posted_y, posted),
+          status_id_post = coalesce(status_id_post_y, status_id_post),
+          text_post = coalesce(text_post_y, text_post),
+          timestamp_post = coalesce(timestamp_post_y, timestamp_post)
+        )%>%
         arrange(rn) %>%
-        select(-rn)
+        select(-rn) %>%
+        .select_ratio_cols_at()
     )
 
     .compare_n_row_eq(
       data1 = ratio_log_scrape_export,
       data2 = ratio_log_scrape
     )
+
+    status_id_posted <- pull(ratio_wasposted_raw, status_id_post)
+    was_posted <- ifelse(status_id_posted != sentinel, TRUE, FALSE)
+
+    if(!was_posted) {
+      if(verbose) {
+        msg <-
+          sprintf(
+            paste0(
+              "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
+              "being reverted (because `sentinel` was detected) for \"%s\"."
+          ),
+          screen_name
+          )
+        message(msg)
+      }
+      ratio_log_scrape_export <- ratio_log_scrape
+    }
 
     path_ratio_log_scrape <- export_ratio_log_scrape_post(ratio_log_scrape_export)
 
