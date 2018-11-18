@@ -5,7 +5,7 @@
 # screen_name <- setdiff(config$screen_name, "RealSkipBayless")
 # purrr::walk(
 #   screen_name,
-#   ~do_scrape_ratio(.x)
+#   ~.do_scrape_ratio(.x)
 # )
 
 tl_self <- .get_tl_self_possibly()

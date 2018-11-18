@@ -8,7 +8,5 @@ invisible(source(".Rprofile"))
 # token <- rtweet::get_token()
 
 pre_auto()
-# f_possibly <- purrr::possibly(do_scrape_ratio_all, otherwise = message(paste0("Encountered an error...")))
 do_scrape_ratio_all()
-# f_possibly()
 post_auto()

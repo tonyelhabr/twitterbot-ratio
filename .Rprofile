@@ -28,5 +28,8 @@ rm("paths_funcs")
 
 config <- config::get()
 
+# NOTE: Not sure why this isn't working from the .Renviron file.
+options(readr.num_columns = 0)
+
 screen_name <- import_screen_name()
 regenerate_sentiment_file()

@@ -22,11 +22,13 @@
            path_backup = sprintf("%s-%s.%s", file, suffix_backup, ext),
            verbose = config$verbose_file) {
     if (!file.exists(path)) {
-      msg <-
-        sprintf("Backup file %s cannot be created because %s cannot be found!",
-                path_backup,
-                path)
-      message(msg)
+      if(verbose) {
+        msg <-
+          sprintf("Backup file %s cannot be created because %s cannot be found!",
+                  path_backup,
+                  path)
+        message(msg)
+      }
       return(path_backup)
     }
 
@@ -65,8 +67,10 @@
     n <- length(paths_like_backup)
     if (n < n_keep) {
       if (n == 0L) {
-        msg <- sprintf("No backup files to delete.")
-        message(msg)
+        if(verbose) {
+          msg <- sprintf("No backup files to delete.")
+          message(msg)
+        }
         return(path)
       }
       msg <-
@@ -113,13 +117,35 @@
     invisible(data)
   }
 
+.preprocess_compare_n_rows <-
+  function(message, warn, stop, ...) {
+
+    n_msg <- sum(c(message, warn, stop), na.rm = TRUE)
+    if(n_msg < 1) {
+      return(NULL)
+    }
+
+    if(n_msg > 1) {
+      msg <- paste0("Only one of `message`, `warn`, and `stop` can be set to `TRUE`.")
+      stop(msg, call. = FALSE)
+    }
+
+    invisible(TRUE)
+  }
+
 .compare_n_row_eq <-
   function(data1,
            data2,
            n1 = nrow(data1),
            n2 = nrow(data2),
            nm1 = deparse(substitute(data1)),
-           nm2 = deparse(substitute(nm2))) {
+           nm2 = deparse(substitute(data2)),
+           message = FALSE,
+           warn = FALSE,
+           stop = !message) {
+
+    .preprocess_compare_n_rows(message, warn, stop)
+
     if (n1 != n2) {
       msg <-
         sprintf(
@@ -143,19 +169,41 @@
            n1 = nrow(data1),
            n2 = nrow(data2),
            nm1 = deparse(substitute(data1)),
-           nm2 = deparse(substitute(nm2))) {
-    if(n1 < n1) {
-      msg <-
-        sprintf(
-          paste0(
-            "`%s` should have more rows than `%s`  (%d < %d). ",
-            "Something unexpected happened."),
-          nm1,
-          nm2,
-          n1,
-          n2
-        )
-      stop(msg, call. = FALSE)
+           nm2 = deparse(substitute(nm2)),
+           message = FALSE,
+           warn = FALSE,
+           stop = !message) {
+
+    .preprocess_compare_n_rows(message, warn, stop)
+
+    if(n1 > n2) {
+      if(message | warn) {
+        msg <-
+          sprintf("`%s` has less rows than `%s`  (%d < %d).",
+            nm1,
+            nm2,
+            n1,
+            n2
+          )
+        if(message) {
+          message(msg)
+        } else if (warn) {
+          warning(msg, call. = FALSE)
+        }
+      } else if (stop) {
+        msg <-
+          sprintf(
+            paste0(
+              "`%s` should have more rows than `%s`  (%d < %d). ",
+              "Something unexpected happened."),
+            nm1,
+            nm2,
+            n1,
+            n2
+          )
+        stop(msg, call. = FALSE)
+      }
+
     }
     invisible(TRUE)
   }

@@ -53,9 +53,6 @@
         # ratio_reply2fav = reply_count / favorite_count,
         # ratio_reply2retweet = reply_count / retweet_count,
         ratio = reply_count / (favorite_count + retweet_count)
-      ) %>%
-      mutate(
-        ratio_inv = if_else(ratio == 0, 0, 1 / ratio)
       )
   }
 
@@ -102,8 +99,7 @@
 
     suppressMessages(
       rtweet::get_timeline(user = user, since_id = since_id, token = token, ...) %>%
-        .filter_tweet_type() %>%
-        .select_tl_cols_at()
+        .filter_tweet_type()
     )
   }
 
@@ -117,7 +113,7 @@
       filter(created_at <= (.TIME - lubridate::hours(n_hour_lag_scrape)))
   }
 
-do_scrape_ratio <-
+.do_scrape_ratio <-
   function(screen_name,
            tl = NULL,
            since_id = NULL,
@@ -151,12 +147,12 @@ do_scrape_ratio <-
       }
     }
 
-    .validate_ratio_df(ratio_log_scrape)
+    .validate_ratio_df_robustly(ratio_log_scrape)
 
     if (is.null(ratio_last_scrape)) {
       ratio_last_scrape <- .import_ratio_last_scrape_possibly()
 
-      if (!is.null(ratio_last_scrape)) {
+      if (is.null(ratio_last_scrape)) {
         if (verbose) {
           msg <-
             sprintf("Creating missing `ratio_last_scrape` file from `ratio_log_scrape`.")
@@ -171,7 +167,7 @@ do_scrape_ratio <-
       data1 = ratio_last_scrape,
       data2 = ratio_log_scrape
     )
-    .validate_ratio_df(ratio_last_scrape)
+    .validate_ratio_df_robustly(ratio_last_scrape)
     .validate_ratio_onerowpergrp_df(ratio_last_scrape)
 
     if (is.null(tl)) {
@@ -189,8 +185,14 @@ do_scrape_ratio <-
         }
       }
 
-      if(is.null(tl)) {
+      if(nrow(tl) == 0L) {
         msg <- sprintf("Did not find any tweets for \"%s\".", screen_name)
+        message(msg)
+        return(NULL)
+      }
+
+      if(is.null(tl)) {
+        msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", screen_name)
         message(msg)
         return(NULL)
       }
@@ -230,7 +232,8 @@ do_scrape_ratio <-
       reply %>%
       .add_ratio_cols_at() %>%
       .add_timestamp_scrape_col_at() %>%
-      arrange(desc(ratio))
+      .add_score_cols_at() %>%
+      arrange(created_at)
 
     path_ratio_log_scrape <- export_ratio_log_scrape_scrape(ratio_log_scrape_export)
 
@@ -253,6 +256,6 @@ do_scrape_ratio_all <-
     }
     .validate_screen_name_vector(screen_name)
     .create_backup(path = config$path_ratio_log_scrape)
-    purrr::walk(screen_name, ~do_scrape_ratio(screen_name = .x))
+    purrr::walk(screen_name, ~.do_scrape_ratio(screen_name = .x))
   }
 

@@ -12,9 +12,9 @@ default:
   n_hour_lag_scrape: 12
   n_tl_new: 100
 
-  tl_cache: false
+  tl_cache: true
 
-  post_delay: true
+  post_delay: false
 
   post_reply: true
   post_retweet: false

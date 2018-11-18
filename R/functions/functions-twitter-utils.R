@@ -30,7 +30,6 @@
     .COLS_TL_ORDER,
     "reply_count",
     "ratio",
-    "ratio_inv",
     "timestamp_scrape"
   )
 .COLS_RATIO_SCORE_ORDER <-
@@ -56,6 +55,57 @@
   }
 
 .validate_ratio_df <- purrr::partial(.validate_df, cols = .COLS_RATIO_ORDER)
+# NOTE: This function can be replaced with the simplified version above
+# once all other functions are "stable"/"finalized". Until then, this is useful
+# for checking the integrity of the data.
+.validate_ratio_df_robustly <-
+  function(data, cols = .COLS_RATIO_ORDER, ...) {
+    # # Debugging...
+    # data = import_ratio_log_scrape()
+    # cols = cols = .COLS_RATIO_ORDER
+
+    .validate_df(data = data, cols = cols)
+
+    data_filt <- data %>% filter(!considered %in% c(0L, 1L))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    data_filt <- data %>% filter(!posted %in% c(0L, 1L))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    # NOTE: Can remove this check if this field is ever populated in the future.
+    # (Currently, it is not used.)
+    data_filt <- data %>% filter(status_id_post != "")
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    data_filt <- data %>% filter((posted == 1L) & (considered == 0L))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    data_filt <- data %>% filter(considered == 1L & is.na(timestamp_post))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    data_filt <- data %>% filter((posted == 1L) & (text_post == ""))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+    data_filt <- data %>% filter((posted == 0L) & (text_post != ""))
+    stopifnot(
+      nrow(data_filt) == 0L
+    )
+
+  }
+
+
 .validate_tl_df <- purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
 .validate_screen_name_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_ORDER)
 .validate_sentiment_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
@@ -133,7 +183,7 @@
   }
 
 .reconvert_double_cols_at <-
-  function(data, cols = str_subset(names(data), "^ratio"), ...) {
+  function(data, cols = str_subset(names(data), "^ratio$"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.double)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., 0)))
@@ -177,7 +227,9 @@
       .reconvert_double_cols_at()
     .postprocess_import(data = data, path = path)
   }
+
 .import_ratio_file <- .import_twitter_file
+
 import_ratio_last_scrape <-
   purrr::partial(.import_ratio_file, path = config$path_ratio_last_scrape)
 import_ratio_log_scrape <-
@@ -336,6 +388,7 @@ export_ratio_last_post <-
 
 regenerate_sentiment_file <-
   function(screen_name = NULL,
+           sentiment = NULL,
            ...,
            path = config$path_sentiment,
            backup = TRUE,
@@ -345,19 +398,24 @@ regenerate_sentiment_file <-
 
     .preprocess_export(path = path, backup = backup)
 
-    # screen_name %>%
-    #   count(user_sentiment, sort = TRUE)
-    # screen_name %>%
-    #   count(audience_sentiment, sort = TRUE)
     if(is.null(screen_name)) {
       screen_name <- import_screen_name()
     }
+
+    if(is.null(sentiment)) {
+      .import_sentiment_possibly <- purrr::possibly(import_sentiment, otherwise = NULL)
+      sentiment_old <- .import_sentiment_possibly()
+    }
+
+    sentiment_exist <-
+      screen_name %>%
+      gather(actor, sentiment, matches("sentiment$")) %>%
+      mutate_at(vars(actor), funs(str_remove_all(., "_sentiment$"))) %>%
+      distinct(sentiment)
+
     suppressMessages(
-      data <-
-        screen_name %>%
-        gather(actor, sentiment, matches("sentiment$")) %>%
-        mutate_at(vars(actor), funs(str_remove_all(., "_sentiment$"))) %>%
-        distinct(sentiment) %>%
+      sentiment_new <-
+        sentiment_exist %>%
         left_join(
           tribble(
             ~sentiment, ~mood,
@@ -367,12 +425,31 @@ regenerate_sentiment_file <-
             "negative", "negative",
             "neutral", "neutral",
             "sarcastic", "positive",
-            "supportive", "positive"
+            "supportive", "positive",
+            "positive", "positive",
+            "unknown", "neutral"
           )
         )
     )
-    write_csv(x = data, path = path, na = na, append = append, ...)
-    .postprocess_export(data = data, path = path, ...)
+
+    .compare_n_row_le(
+      data1 = sentiment_exist,
+      data2 = sentiment_new,
+      message = TRUE,
+      stop = FALSE
+    )
+
+    if(!is.null(sentiment_old)) {
+      .compare_n_row_le(
+        data1 = sentiment_old,
+        data2 = sentiment_new,
+        message = TRUE,
+        stop = FALSE
+      )
+    }
+
+    write_csv(x = sentiment_new, path = path, na = na, append = append, ...)
+    .postprocess_export(data = sentiment_new, path = path, ...)
   }
 
 # convert_xxx ----

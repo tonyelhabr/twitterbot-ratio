@@ -1,14 +1,36 @@
 
-# Reference: rtweet::emojis %>% filter(description %>% str_detect("fire"))
+# Reference: rtweet::emojis %>% filter(description %>% str_detect("^fire$"))
 .get_chr_emoji_fire <-
   function() {
-    "\U0001f525"
+    # "\U0001f525"
+    ""
   }
 
-# Reference: rtweet::emojis %>% filter(description %>% str_detect("fearful face"))
+# Reference: "^fearful face$"
 .get_chr_emoji_fear <-
   function() {
-    "\U0001f628"
+   #  "\U0001f628"
+    ""
+  }
+
+# Reference: "^grinning face$"
+.get_chr_emoji_smile <-
+  function() {
+    # "\U0001f600"
+    ""
+  }
+
+# Reference: "^thumbs up$"
+.get_chr_emoji_thumbsup <-
+  function() {
+    # "\U0001f44d"
+    ""
+  }
+
+.prettify_timestamp_post <-
+  function(x) {
+    # stopifnot(lubridate::is.timepoint(x))
+    strftime(x, "%I:%M %p, %m/%d/%Y")
   }
 
 .slice_ratio_max <-
@@ -48,9 +70,13 @@
 
     ratio_pastposted <-
       ratio_log_scrape %>%
-      .filter_ratio_log_scrape_posted(.screen_name = screen_name, .status_id = status_id)
+      .filter_ratio_log_scrape_posted(
+        .screen_name = screen_name,
+        .status_id = status_id
+      )
+
     if(nrow(ratio_pastposted) == 0L) {
-      chr_emoji_fear <- .get_chr_emoji_fear()
+      chr_emoji <- .get_chr_emoji_fear()
       text_post <-
         sprintf(
           paste0(
@@ -58,22 +84,29 @@
             "Be aware of your ratio with future tweets! %s"
           ),
           text_post,
-          chr_emoji_fear
+          chr_emoji
         )
     } else {
 
-    if(!is.null(ratio_last_post)) {
-      # NOTE: This data set should only have one record per screen name,
-      # so there should not be any need to `slice()`.
-      ratio_pastposted_last <-
-        ratio_last_post %>%
-        .filter_ratio_log_scrape_posted(.screen_name = screen_name, .status_id = status_id)
-    } else {
-      ratio_pastposted_last <-
-        ratio_pastposted %>%
-        arrange(desc(timestamp_post)) %>%
-        slice(1)
-      if(nrow(ratio_pastposted_last) > 0L) {
+      if(!is.null(ratio_last_post)) {
+        # NOTE: This data set should only have one record per screen name,
+        # so there should not be any need to `slice()`.
+        ratio_pastposted_last <-
+          ratio_last_post %>%
+          .filter_ratio_log_scrape_posted(
+            .screen_name = screen_name,
+            .status_id = status_id
+          )
+      } else {
+        # NOTE: Doing this in case `ratio_last_post` is not provided.
+        ratio_pastposted_last <-
+          ratio_pastposted %>%
+          arrange(desc(timestamp_post)) %>%
+          slice(1)
+
+      }
+
+      if(nrow(ratio_pastposted_last) > 1L) {
         msg <-
           paste0(
             "It was not expected that this condition would ever be met.\n",
@@ -81,42 +114,52 @@
           )
         stop(msg, call. = FALSE)
       }
-    }
 
-    if(nrow(ratio_pastposted_last) == 0L) {
-      msg <-
-        paste0(
-          "It was not expected that this condition would ever be met!"
-        )
-      stop(msg, call. = FALSE)
-    }
-    ratio_past1 <- pull(ratio_pastposted_last, ratio)
+      ratio_past1 <- pull(ratio_pastposted_last, ratio)
+      timestamp_post_past1 <- pull(ratio_pastposted_last, timestamp_post)
+      timestamp_post_past1 <- .prettify_timestamp_post(timestamp_post_past1)
 
-    if(ratio_past1 < ratio) {
-      chr_emoji_fire <- .get_chr_emoji_fire()
-      text_post <-
-        sprintf(
-          "%s This ratio tops the previous one (%.02f) I tweeted about! %s",
-          text_post,
-          ratio_past1,
-          chr_emoji_fire
-        )
-    }
+      if(ratio_past1 >= ratio) {
+        chr_emoji <- .get_chr_emoji_thumbsup()
+        text_post <-
+          sprintf(
+            "%s This ratio is lower the previous one (%.02f) I tweeted about (at %s)! %s",
+            text_post,
+            ratio_past1,
+            timestamp_post_past1,
+            chr_emoji
+          )
+      } else {
 
-    ratio_pastposted_max <-
-      ratio_pastposted %>%
-      .slice_ratio_max()
+        ratio_pastposted_max <- .slice_ratio_max(ratio_pastposted)
+        ratio_max <- pull(ratio_pastposted_max, ratio)
 
-    ratio_max <- pull(ratio_pastposted_max, ratio)
-    if(ratio_max < ratio) {
-      text_post <-
-        sprintf(
-          "%s Also, this ratio breaks your previous all-time high (%.02f)! %s",
-          text_post,
-          ratio_max,
-          chr_emoji_fire
-        )
-    }
+        chr_emoji <- .get_chr_emoji_fire()
+
+        if(ratio_max > ratio) {
+
+          text_post <-
+            sprintf(
+              "%s This ratio tops the previous one (%.02f) I tweeted about (at %s)! %s",
+              text_post,
+              ratio_past1,
+              timestamp_post_past1,
+              chr_emoji
+            )
+        } else {
+
+          timestamp_post_max <- pull(ratio_pastposted_max, timestamp_post)
+          timestamp_post_max <- .prettify_timestamp_post(timestamp_post_max)
+          text_post <-
+            sprintf(
+              "%s This ratio breaks your previous all-time high (%.02f at %s)! %s",
+              text_post,
+              ratio_max,
+              timestamp_post_max,
+              chr_emoji
+            )
+        }
+      }
     }
 
     if(reply) {
@@ -124,7 +167,10 @@
         sprintf(
           "%s %s",
           text_post,
-          .make_twitter_url_reply(.screen_name = screen_name, .status_id = status_id)
+          .make_twitter_url_reply(
+            .screen_name = screen_name,
+            .status_id = status_id
+          )
         )
     }
     text_post
@@ -140,6 +186,15 @@
            favorite = config$post_favorite,
            token = config$token,
            verbose = config$verbose_post) {
+    # # Debugging...
+    # reply = FALSE
+    # retweet = FALSE
+    # favorite = FALSE
+
+    # NOTE: Setting a default value.
+    if(sum(c(favorite, retweet, reply), na.rm = TRUE) < 1) {
+      return(invisible(""))
+    }
     if (favorite) {
       resp <- rtweet::post_favorite(status_id, token = token)
     }
@@ -168,19 +223,17 @@
         message(msg)
       }
     }
-    # Debuggning...
-    # status_id_post <- status_id
-    if(!is.null(resp)) {
-      httr::warn_for_status(resp)
-    }
+    # if(!is.null(resp)) {
+    #   httr::warn_for_status(resp)
+    # }
     # TODO: Get the status_id of the tweet?
-    status_id_post <- ""
-    invisible(status_id_post)
+    res <- ""
+    invisible(res)
   }
 
 # NOTE: Default for `screen_name` is `NULL` so that code can dynamically
 # determine whether to post tweets for all screen names or just one.
-do_post_ratio <-
+.do_post_ratio <-
   function(screen_name = NULL,
            ratio_log_scrape = NULL,
            ratio_last_post = NULL,
@@ -192,13 +245,6 @@ do_post_ratio <-
     # ratio_log_scrape = NULL
     # ratio_last_post = NULL
     # verbose = config$verbose_post
-
-    # if(verbose) {
-    #   if(interactive()) {
-    #     msg <- sprintf("Running interactively in `%s()`!", match.call()[[1]])
-    #     message(msg)
-    #   }
-    # }
 
     # TODO (Long-term): Write a function to do the same pre-processing for the
     # `do_scrape/ratio_post()` functions.
@@ -213,7 +259,7 @@ do_post_ratio <-
       }
     }
 
-    .validate_ratio_df(ratio_log_scrape)
+    .validate_ratio_df_robustly(ratio_log_scrape)
 
     if (is.null(ratio_last_post)) {
       ratio_last_post <- .import_ratio_last_post_possibly()
@@ -231,7 +277,7 @@ do_post_ratio <-
       data1 = ratio_last_post,
       data2 = ratio_log_scrape
     )
-    .validate_ratio_df(ratio_last_post)
+    .validate_ratio_df_robustly(ratio_last_post)
     .validate_ratio_onerowpergrp_df(ratio_last_post)
 
     ratio_log_scrape_filt <- ratio_log_scrape
@@ -246,7 +292,8 @@ do_post_ratio <-
 
     ratio_log_scrape_filt <-
       ratio_log_scrape_filt %>%
-      filter(considered == 0L && posted == 0L)
+      filter(considered == 0L) %>%
+      filter(posted == 0L)
 
     if(nrow(ratio_log_scrape_filt) == 0L) {
       if(verbose) {
@@ -256,20 +303,19 @@ do_post_ratio <-
       }
     }
 
-    ratio_topost_raw <-
-      ratio_log_scrape_filt %>%
-      .slice_ratio_max()
+    ratio_topost_raw <- .slice_ratio_max(ratio_log_scrape_filt)
 
     suppressMessages(
       ratio_notposted_raw <-
-        ratio_log_scrape %>%
+        ratio_log_scrape_filt %>%
         anti_join(ratio_topost_raw)
     )
 
     .compare_n_row_eq(
-      data1 = ratio_log_scrape,
+      data1 = ratio_log_scrape_filt,
       data2 = bind_rows(ratio_topost_raw, ratio_notposted_raw)
     )
+
 
     ratio_topost <-
       ratio_topost_raw %>%
@@ -292,7 +338,7 @@ do_post_ratio <-
       msg <-
         sprintf(
           paste0(
-            "If `delay` were set to `TRUE`, the message that would have been posted is:\n",
+            # "If `delay` were set to `TRUE`, the message that would have been posted is:\n",
             "%s"
           ),
           text_post
@@ -301,6 +347,7 @@ do_post_ratio <-
       return(ratio_topost)
 
     }
+
     ratio_wasposted_raw <-
       ratio_topost %>%
       mutate(
@@ -315,26 +362,18 @@ do_post_ratio <-
           )
       )
 
-    # NOTE: I believe that the columns of these data sets
-    # should already be in the correct order.
-    .time <- Sys.time()
-    ratio_wasposted <-
-      ratio_wasposted_raw %>%
-      mutate(posted = 1L, timestamp_post = .time) %>%
-      .select_ratio_cols_at()
-
-    ratio_notposted <-
-      ratio_notposted_raw %>%
-      mutate(posted = 0L, timestamp_post = .time) %>%
-      .select_ratio_cols_at()
-
     suppressMessages(
       ratio_log_scrape_export <-
         ratio_log_scrape %>%
         mutate(rn = row_number()) %>%
         select(one_of(c("rn", .COLS_RATIO_BASE_ORDER))) %>%
-        inner_join(
-          bind_rows(ratio_notposted, ratio_wasposted)
+        left_join(
+          bind_rows(
+            ratio_notposted_raw %>% mutate(posted = 1L),
+            ratio_wasposted_raw %>% mutate(posted = 0L)
+            ) %>%
+            .select_ratio_cols_at() %>%
+            mutate(considered = 1L, timestamp_post = Sys.time())
         ) %>%
         arrange(rn) %>%
         select(-rn)
@@ -350,17 +389,18 @@ do_post_ratio <-
     ratio_last_post_export <- .convert_ratio_log_scrape_to_last_post(ratio_log_scrape_export)
     path_ratio_last_post <- export_ratio_last_post(ratio_last_post_export)
 
-    invisible(ratio_wasposted)
+    invisible(path_ratio_last_post)
   }
 
 
 do_post_ratio_all <-
   function(screen_name = NULL, ...) {
-    if(is.null(screen_name)) {
+    # NOTE: The interactive statement can be removed. It's purely for debugging purposes.
+    if(interactive() | is.null(screen_name)) {
       screen_name <- get_screen_name_topost()
     }
     .validate_screen_name_vector(screen_name)
     # s.create_backup(path = config$path_ratio_log_post)
-    purrr::walk(screen_name, ~do_post_ratio_possibly(screen_name = .x))
+    purrr::walk(screen_name, ~.do_post_ratio(screen_name = .x))
   }
 

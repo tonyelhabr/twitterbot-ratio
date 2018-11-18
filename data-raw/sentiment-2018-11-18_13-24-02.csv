@@ -3,6 +3,8 @@ debate,negative
 neutral,neutral
 fun,positive
 sarcastic,positive
+positive,positive
 mockery,negative
 negative,negative
 supportive,positive
+unknown,neutral

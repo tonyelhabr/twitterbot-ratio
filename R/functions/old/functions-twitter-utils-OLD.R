@@ -20,7 +20,6 @@
       tibble(
         reply_count = double(),
         ratio = double(),
-        ratio_inv = double(),
         timestamp_scrape = lubridate::as_datetime(character())
       )
     ) %>%
