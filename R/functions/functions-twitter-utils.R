@@ -8,6 +8,12 @@
     "user_sentiment",
     "audience_sentiment"
   )
+.COLS_SENTIMENT_ORDER <-
+  c(
+    "sentiment",
+    "mood"
+  )
+
 .COLS_TL_ORDER <-
   c(
     "user_id",
@@ -42,16 +48,17 @@
   )
 
 # validate_xxx_df ----
-.validate_twitter_df <-
+.validate_df <-
   function(data, cols, ...) {
     stopifnot(is.data.frame(data))
     # stopifnot(nrow(data) > 0L)
     stopifnot(all(cols %in% names(data)))
   }
 
-.validate_ratio_df <- purrr::partial(.validate_twitter_df, cols = .COLS_RATIO_ORDER)
-.validate_tl_df <- purrr::partial(.validate_twitter_df, cols = .COLS_TL_ORDER)
-.validate_screen_name_df <- purrr::partial(.validate_twitter_df, cols = .COLS_SCREEN_NAME_ORDER)
+.validate_ratio_df <- purrr::partial(.validate_df, cols = .COLS_RATIO_ORDER)
+.validate_tl_df <- purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
+.validate_screen_name_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_ORDER)
+.validate_sentiment_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
 
 .validate_twitter_onerowpergrp_df <-
   function(data, col, ...) {
@@ -73,9 +80,14 @@
 .validate_ratio_onerowpergrp_df <-
   purrr::partial(.validate_twitter_onerowpergrp_df, col = "screen_name")
 
-.validate_screen_name <-
-  function(data, ...) {
-    stopifnot(is.character(data))
+.validate_screen_name_vector <-
+  function(x, ...) {
+    stopifnot(is.character(x))
+  }
+
+.validate_screen_name_1 <-
+  function(x, ...) {
+    stopifnot(is.character(x), length(x) == 1L)
   }
 
 # reorder_xxx_cols_at  ----
@@ -135,12 +147,26 @@
   }
 
 # import_xxx ----
-.import_ratio_file <-
-  function(..., path, verbose = config$verbose_file) {
+.preprocess_import <-
+  function(path, ..., verbose = config$verbose_file) {
     if (!file.exists(path)) {
       msg <- sprintf("%s does not exist.", path)
       stop(msg, call. = FALSE)
     }
+  }
+
+.postprocess_import <-
+  function(data, path, ..., verbose = config$verbose_file) {
+    if (verbose) {
+      msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
+      message(msg)
+    }
+    invisible(data)
+  }
+
+.import_twitter_file <-
+  function(..., path, verbose = config$verbose_file) {
+    .preprocess_import(path = path)
     # data <- data %>% rtweet:::unprepend_ids()
     data <- rtweet::read_twitter_csv(path)
     data <-
@@ -149,95 +175,113 @@
       .reconvert_chr_cols_at() %>%
       .reconvert_integer_cols_at() %>%
       .reconvert_double_cols_at()
-    if (verbose) {
-      msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
-      message(msg)
-    }
-    data
+    .postprocess_import(data = data, path = path)
   }
+.import_ratio_file <- .import_twitter_file
 import_ratio_last_scrape <-
   purrr::partial(.import_ratio_file, path = config$path_ratio_last_scrape)
-import_ratio_log <-
-  purrr::partial(.import_ratio_file, path = config$path_ratio_log)
+import_ratio_log_scrape <-
+  purrr::partial(.import_ratio_file, path = config$path_ratio_log_scrape)
 import_ratio_last_post <-
   purrr::partial(.import_ratio_file, path = config$path_ratio_last_post)
 
 .import_ratio_last_scrape_possibly <-
   purrr::possibly(import_ratio_last_scrape, otherwise = NULL)
-.import_ratio_log_possibly <-
-  purrr::possibly(import_ratio_log, otherwise = NULL)
+.import_ratio_log_scrape_possibly <-
+  purrr::possibly(import_ratio_log_scrape, otherwise = NULL)
 .import_ratio_last_post_possibly <-
   purrr::possibly(import_ratio_last_post, otherwise = NULL)
 
-import_screen_name_all <-
-  function(..., path = config$path_screen_name, verbose = config$verbose_file) {
-    if (!file.exists(path)) {
-      msg <- sprintf("%s does not exist.", path)
-      stop(msg, call. = FALSE)
-    }
+
+.import_nontwitter_file <-
+  function(..., path, f_validate = NULL, verbose = config$verbose_file) {
+    .preprocess_import(path = path, ...)
     data <- readr::read_csv(path)
-    # data <- .flatten_screen_name(data)
-    if (verbose) {
-      msg <- sprintf("Imported data from %s at %s.", path, Sys.time())
-      message(msg)
+    if(!is.null(f_validate)) {
+      f_validate(data)
     }
-    invisible(data)
+    # data <- .flatten_screen_name(data)
+    .postprocess_import(data = data, path = path, ...)
   }
+
+import_screen_name <-
+  purrr::partial(.import_nontwitter_file, path = config$path_screen_name, f_validate = .validate_screen_name_df)
+import_sentiment <-
+  purrr::partial(.import_nontwitter_file, path = config$path_sentiment, f_validate = .validate_sentiment_df)
 
 .flatten_screen_name <-
   function(data, ...) {
     pull(data, screen_name)
   }
 
-.filter_screen_name <-
-  function(data, ...) {
-    stopifnot(is.data.frame(data))
-    data %>%
-      filter(category == "sports") %>%
-      filter(!user_sentiment %in% c("light-humored", "positive")) %>%
-      filter(audience_sentiment %in% c("negative", "mockery", "two-sided"))
+# NOTE: This function requires that both data sets be non-`NULL`.
+.join_screen_name_and_sentiment <-
+  function(screen_name, sentiment, ...) {
+    suppressMessages(
+      screen_name %>%
+        left_join(sentiment %>% rename_all(funs(paste0("user_", .)))) %>%
+        left_join(sentiment %>% rename_all(funs(paste0("audience_", .))))
+    )
   }
 
-import_screen_name_scrape_ratio <-
+.filter_screen_name <-
+  function(data, sentiment = NULL, ...) {
+    stopifnot(is.data.frame(data))
+    if(is.null(sentiment)) {
+      sentiment <- import_sentiment()
+    }
+
+    data %>%
+      filter(category1 == "sports") %>%
+      .join_screen_name_and_sentiment(sentiment = sentiment) %>%
+      filter(user_mood %in% c("neutral", "negative")) %>%
+      filter(audience_mood %in% c("negative"))
+  }
+
+get_screen_name_toscrape <-
   function(...) {
-    data <- import_screen_name_all()
+    data <- import_screen_name()
     data %>%
       .filter_screen_name() %>%
       .flatten_screen_name()
   }
 
-.import_screen_name_scrape_ratio_possibly <-
-  purrr::possibly(import_screen_name_scrape_ratio, otherwise = NULL)
-
-import_screen_name_post <-
+get_screen_name_topost <-
   function(...) {
-    ratio_log <- import_ratio_log()
+    ratio_log_scrape <- import_ratio_log_scrape()
     data <-
-      ratio_log %>%
+      ratio_log_scrape %>%
       distinct(screen_name)
     data %>%
       .flatten_screen_name()
   }
 
-.import_screen_name_scrape_ratio_possibly <-
-  purrr::possibly(import_screen_name_scrape_ratio, otherwise = NULL)
-
 # export_xxx ----
-.export_twitter_file <-
-  function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
+.preprocess_export <-
+  function(path, backup, ..., verbose = config$verbose_file) {
     if (backup) {
       path_backup <- .create_backup(path = path)
       .clean_backup(path = path)
     }
-    # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
-    # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
-    data <- data %>% rtweet:::prepend_ids()
-    write_csv(data, path, append = append, na = na, ...)
+  }
+
+.postprocess_export <-
+  function(data, path, ..., verbose = config$verbose_file) {
     if (verbose) {
       msg <- sprintf("Exported data to %s at %s.", path, Sys.time())
       message(msg)
     }
     invisible(path)
+  }
+
+.export_twitter_file <-
+  function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
+    .preprocess_export(path = path, backup = backup, ...)
+    # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
+    # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
+    data <- rtweet:::prepend_ids(data)
+    write_csv(data, path, append = append, na = na, ...)
+    .postprocess_export(data = data, path = path, ...)
   }
 
 export_ratio_last_scrape <-
@@ -247,17 +291,17 @@ export_ratio_last_scrape <-
     append = FALSE,
     backup = FALSE
   )
-export_ratio_log_scrape <-
+export_ratio_log_scrape_scrape <-
   purrr::partial(
     .export_twitter_file,
-    path = config$path_ratio_log,
-    append = file.exists(config$path_ratio_log),
+    path = config$path_ratio_log_scrape,
+    append = file.exists(config$path_ratio_log_scrape),
     backup = FALSE
   )
-export_ratio_log_post <-
+export_ratio_log_scrape_post <-
   purrr::partial(
     .export_twitter_file,
-    path = config$path_ratio_log,
+    path = config$path_ratio_log_scrape,
     append = FALSE,
     backup = FALSE
   )
@@ -269,7 +313,7 @@ export_ratio_last_post <-
     backup = FALSE
   )
 
-export_tl_cache <-
+.export_tl_cache <-
   function(data,
            screen_name,
            ...,
@@ -289,9 +333,51 @@ export_tl_cache <-
     )
   }
 
+
+regenerate_sentiment_file <-
+  function(screen_name = NULL,
+           ...,
+           path = config$path_sentiment,
+           backup = TRUE,
+           na = "",
+           append = FALSE,
+           verbose = config$verbose_file) {
+
+    .preprocess_export(path = path, backup = backup)
+
+    # screen_name %>%
+    #   count(user_sentiment, sort = TRUE)
+    # screen_name %>%
+    #   count(audience_sentiment, sort = TRUE)
+    if(is.null(screen_name)) {
+      screen_name <- import_screen_name()
+    }
+    suppressMessages(
+      data <-
+        screen_name %>%
+        gather(actor, sentiment, matches("sentiment$")) %>%
+        mutate_at(vars(actor), funs(str_remove_all(., "_sentiment$"))) %>%
+        distinct(sentiment) %>%
+        left_join(
+          tribble(
+            ~sentiment, ~mood,
+            "debate", "negative",
+            "fun", "positive",
+            "mockery", "negative",
+            "negative", "negative",
+            "neutral", "neutral",
+            "sarcastic", "positive",
+            "supportive", "positive"
+          )
+        )
+    )
+    write_csv(x = data, path = path, na = na, append = append, ...)
+    .postprocess_export(data = data, path = path, ...)
+  }
+
 # convert_xxx ----
 # TODO: Implement plural version of `col_filt`?
-.convert_ratio_log_to_last_file <-
+.convert_ratio_log_scrape_to_last_file <-
   function(data,
            col_grp = "screen_name",
            col_sort = "created_at",
@@ -337,28 +423,28 @@ export_tl_cache <-
     res
   }
 
-.convert_ratio_log_to_last_scrape <-
-  purrr::partial(.convert_ratio_log_to_last_file, col_filt = "ratio")
+.convert_ratio_log_scrape_to_last_scrape <-
+  purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "ratio")
 # # NOTE: Change `col_sort` to "timestamp_post" here?
-.convert_ratio_log_to_last_post <-
-  purrr::partial(.convert_ratio_log_to_last_file, col_filt = "text_post")
+.convert_ratio_log_scrape_to_last_post <-
+  purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "text_post")
 
 # do_xxx ----
 .preprocess_do_action_ratio <-
   function(screen_name = NULL, ...) {
     if(is.null(screen_name)) {
-      screen_name <- import_screen_name_scrape_ratio()
+      screen_name <- get_screen_name_toscrape()
     }
-    # .validate_screen_name(screen_name)
+    .validate_screen_name(screen_name)
     invisible(screen_name)
   }
 
-# TODO: Use these after all functions are "stable"/"finalized" because
-# these are very abstract.
-.do_action_ratio <-
-  function(screen_name = NULL, ..., .f) {
-    screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
-    purrr::walk(screen_name,, ~.f(.x, ...)
-  }
+# # TODO: Use these after all functions are "stable"/"finalized" because
+# # these are very abstract.
+# .do_action_ratio <-
+#   function(screen_name = NULL, ..., .f) {
+#     screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
+#     purrr::walk(screen_name,, ~.f(.x, ...))
+#   }
 
 

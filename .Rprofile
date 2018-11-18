@@ -28,4 +28,5 @@ rm("paths_funcs")
 
 config <- config::get()
 
-screen_name <- import_screen_name_all()
+screen_name <- import_screen_name()
+regenerate_sentiment_file()

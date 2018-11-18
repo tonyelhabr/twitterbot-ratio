@@ -2,20 +2,20 @@
 
 update_ratio_last <-
   function(...) {
-    ratio_log_import <- import_ratio_log()
+    ratio_log_scrape_import <- import_ratio_log_scrape()
     ratio_last_export <-
-      ratio_log_import %>% 
+      ratio_log_scrape_import %>% 
       .arrange_ratio_df_at() %>% 
       filter(created_at <= (.TIME - lubridate::hours(.N_HOUR_LAG))) %>% 
       .slice_ratio_df_at()
     ratio_last_export %>% readr::write_csv(config$path_ratio_last_scrape, append = FALSE)
   }
 
-distinctify_ratio_log <-
+distinctify_ratio_log_scrape <-
   function(...) {
-    ratio_log_import <- import_ratio_log()
-    ratio_log_export <-
-      ratio_log_import %>%
+    ratio_log_scrape_import <- import_ratio_log_scrape()
+    ratio_log_scrape_export <-
+      ratio_log_scrape_import %>%
       # NOTE: This is "too naive".
       # distinct() %>% 
       group_by(status_id) %>% 

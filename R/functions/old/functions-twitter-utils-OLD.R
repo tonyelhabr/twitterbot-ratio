@@ -13,7 +13,7 @@
       .reorder_tl_cols_at()
   }
 
-..scrape_ratio_df_default <-
+..ratio_scrape_df_default <-
   function(...) {
     bind_cols(
       ..get_tl_df_default(),

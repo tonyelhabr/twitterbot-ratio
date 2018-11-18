@@ -1,14 +1,20 @@
 default:
   path_screen_name: "data-raw/screen_name.csv"
+  path_sentiment: "data-raw/sentiment.csv"
+
   path_ratio_last_scrape: "data/ratio-last-scrape.csv"
-  path_ratio_log: "data/ratio-log.csv"
+  path_ratio_log_scrape: "data/ratio-log-scrape.csv"
   path_tl_cache: "data/tl-cache.csv"
+
   path_ratio_last_post: "data/ratio-last-post.csv"
+  path_ratio_log_post: "data/ratio-log-post.csv" # TODO: Use this?
 
   n_hour_lag_scrape: 12
-  n_tl_new: 1000
+  n_tl_new: 100
 
-  cache_tl: false
+  tl_cache: false
+
+  post_delay: true
 
   post_reply: true
   post_retweet: false
@@ -17,6 +23,7 @@ default:
   verbose_scrape: true
   verbose_post: true
   verbose_file: false
+
   backup_file: true
 
   token: !expr rtweet::get_token()

@@ -121,37 +121,37 @@ do_scrape_ratio <-
   function(screen_name,
            tl = NULL,
            since_id = NULL,
-           ratio_log = NULL,
+           ratio_log_scrape = NULL,
            ratio_last_scrape = NULL,
            ...,
-           cache = config$cache_tl,
+           cache = config$tl_cache,
            verbose = config$verbose_scrape) {
 
     # screen_name = "RealSkipBayless"
     # tl = NULL
     # since_id = NULL
-    # ratio_log = NULL
+    # ratio_log_scrape = NULL
     # ratio_last_scrape = NULL
     # cache = config$cache
     # verbose = config$verbose_scrape
 
     # message(rep("-", getOption("width")))
     message(rep("-", 80L))
-    stopifnot(length(screen_name) == 1L)
+    .validate_screen_name_1(screen_name)
 
-    if (is.null(ratio_log)) {
-      ratio_log <- .import_ratio_log_possibly()
-      if (is.null(ratio_log)) {
+    if (is.null(ratio_log_scrape)) {
+      ratio_log_scrape <- .import_ratio_log_scrape_possibly()
+      if (is.null(ratio_log_scrape)) {
         msg <-
           paste0(
             "Is this the first time you are doing this? ",
-            "(If so, you should create the `ratio_log` file explicitly.)"
+            "(If so, you should create the `ratio_log_scrape` file explicitly.)"
           )
         stop(msg, call. = FALSE)
       }
     }
 
-    .validate_ratio_df(ratio_log)
+    .validate_ratio_df(ratio_log_scrape)
 
     if (is.null(ratio_last_scrape)) {
       ratio_last_scrape <- .import_ratio_last_scrape_possibly()
@@ -159,17 +159,17 @@ do_scrape_ratio <-
       if (!is.null(ratio_last_scrape)) {
         if (verbose) {
           msg <-
-            sprintf("Creating missing `ratio_last_scrape` file from `ratio_log`.")
+            sprintf("Creating missing `ratio_last_scrape` file from `ratio_log_scrape`.")
           message(msg)
         }
-        ratio_last_scrape <- .convert_ratio_log_to_last_scrape(ratio_log)
+        ratio_last_scrape <- .convert_ratio_log_scrape_to_last_scrape(ratio_log_scrape)
         export_ratio_last_scrape(ratio_last_scrape)
       }
     }
 
     .compare_n_row_le(
       data1 = ratio_last_scrape,
-      data2 = ratio_log
+      data2 = ratio_log_scrape
     )
     .validate_ratio_df(ratio_last_scrape)
     .validate_ratio_onerowpergrp_df(ratio_last_scrape)
@@ -213,7 +213,7 @@ do_scrape_ratio <-
     }
 
     if(cache) {
-      path_tl_cache <- export_tl_cache(tl_filt, screen_name)
+      path_tl_cache <- .export_tl_cache(tl_filt, screen_name)
     }
 
     reply <-
@@ -226,33 +226,33 @@ do_scrape_ratio <-
             )
       )
 
-    ratio_log_export <-
+    ratio_log_scrape_export <-
       reply %>%
       .add_ratio_cols_at() %>%
       .add_timestamp_scrape_col_at() %>%
       arrange(desc(ratio))
 
-    path_ratio_log <- export_ratio_log_scrape(ratio_log_export)
+    path_ratio_log_scrape <- export_ratio_log_scrape_scrape(ratio_log_scrape_export)
 
     ratio_last_scrape_export <-
       bind_rows(
         ratio_last_scrape,
-        ratio_log_export
+        ratio_log_scrape_export
       ) %>%
-      .convert_ratio_log_to_last_scrape()
+      .convert_ratio_log_scrape_to_last_scrape()
 
     path_ratio_last_scrape <- export_ratio_last_scrape(ratio_last_scrape_export)
 
     invisible(reply)
   }
 
-.do_scrape_ratio_possibly <-
-  purrr::possibly(do_scrape_ratio, otherwise = NULL)
-
 do_scrape_ratio_all <-
   function(screen_name = NULL, ...) {
-    screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
-    # purrr::walk(screen_name, ~.do_scrape_ratio_possibly(screen_name = .x))
+    if(is.null(screen_name)) {
+      screen_name <- get_screen_name_toscrape()
+    }
+    .validate_screen_name_vector(screen_name)
+    .create_backup(path = config$path_ratio_log_scrape)
     purrr::walk(screen_name, ~do_scrape_ratio(screen_name = .x))
   }
 

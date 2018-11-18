@@ -1,11 +1,11 @@
 
 
-ratio_log <- import_ratio_log()
+ratio_log_scrape <- import_ratio_log_scrape()
 ?rtweet::post_tweet
-ratio_log
+ratio_log_scrape
 rtweet::post_tweet("dlrow olleh")
 ratio_top <-
-  ratio_log %>%
+  ratio_log_scrape %>%
   arrange(desc(ratio)) %>%
   slice(1)
 img_ts <- rtweet::tweet_shot(ratio_top$status_id)
