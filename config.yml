@@ -14,7 +14,7 @@ default:
   n_hour_lag_scrape: 12
   n_tl_new: 100
 
-  tl_cache: true
+  tl_cache: false
 
   # Note: `post_delay` prevents the `.create_post()` function from being called.
   # Note: It is recommended to set this to true and leave the other `post_*` parameters
