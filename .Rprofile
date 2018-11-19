@@ -15,6 +15,7 @@ rm("path_r_profile")
 
 suppressWarnings(suppressPackageStartupMessages(library("tidyverse")))
 suppressWarnings(suppressPackageStartupMessages(library("rlang")))
+suppressWarnings(suppressPackageStartupMessages(library("teplot")))
 
 paths_funcs <-
   list.files(

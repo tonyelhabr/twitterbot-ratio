@@ -1,11 +1,11 @@
 screen_name,employer,category1,category2,user_sentiment,audience_sentiment
 RealSkipBayless,Fox Sports,sports,,debate,mockery
 stephenasmith,ESPN,sports,,neutral,mockery
-NateSilver538,FiveThirtyEight,sports,politics,neutral,debate
+NateSilver538,FiveThirtyEight,sports,politics,debate,debate
 bomani_jones,ESPN,sports,,debate,debate
 BillSimmons,The Ringer,sports,culture,debate,negative
 PFTcommenter,Bar Stool Sports,sports,,fun,supportive
-darrenrovell,ESPN,sports,,fun,mockery
+darrenrovell,ESPN,sports,,informative,mockery
 WhitlockJason,Fox Sports,sports,,debate,negative
 richarddeitsch,The Athletic,sports,,neutral,debate
 jemelehill,ESPN,sports,politics,debate,negative
@@ -15,10 +15,10 @@ DannyBKelly,The Ringer,sports,,fun,neutral
 minakimes,ESPN,sports,,fun,supportive
 BarstoolBigCat,,sports,,fun,supportive
 hen_ease,The Ringer,sports,,fun,mockery
-katienolan,ESPN,sports,culture,fun,debate
+katienolan,ESPN,sports,culture,fun,fun
 SIChrisMannix,Yahoo,sports,,neutral,neutral
 HowardBeck,Yahoo,sports,,neutral,neutral
-ShannonSharpe,Fox Sports,sports,,debate,mockery
+ShannonSharpe,Fox Sports,sports,,debate,fun
 Chris_Broussard,Fox Sports,sports,,debate,mockery
 SheaSerrano,The Ringer,sports,culture,fun,supportive
 Stephania_ESPN,ESPN,sports,,neutral,neutral
@@ -120,7 +120,7 @@ Rachel__Nichols,ESPN,sports,culture,fun,positive
 KNegandhiESPN,ESPN,sports,culture,fun,positive
 KevinOConnorNBA,The Ringer,sports,,informative,supportive
 richeisen,NFL,sports,culture,fun,supportive
-chadmilliman,The Action Network,sports,culture,fun,fun
+chadmillman,The Action Network,sports,culture,fun,fun
 Jpdabrams,The Ringer,sports,,informative,neutral
 CariChampion,ESPN,sports,culture,positive,supportive
 BigWos,,sports,culture,fun,fun

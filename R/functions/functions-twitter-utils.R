@@ -55,7 +55,7 @@
   }
 
 .validate_ratio_df <- purrr::partial(.validate_df, cols = .COLS_RATIO_ORDER)
-# NOTE: This function can be replaced with the simplified version above
+# Note: This function can be replaced with the simplified version above
 # once all other functions are "stable"/"finalized". Until then, this is useful
 # for checking the integrity of the data.
 .validate_ratio_df_robustly <-
@@ -76,7 +76,7 @@
       nrow(data_filt) == 0L
     )
 
-    # NOTE: Can remove this check if this field is ever populated in the future.
+    # Note: Can remove this check if this field is ever populated in the future.
     # (Currently, it is not used.)
     data_filt <- data %>% filter(status_id_post != "")
     stopifnot(
@@ -266,7 +266,7 @@ import_sentiment <-
     pull(data, screen_name)
   }
 
-# NOTE: This function requires that both data sets be non-`NULL`.
+# Note: This function requires that both data sets be non-`NULL`.
 .join_screen_name_and_sentiment <-
   function(screen_name, sentiment, ...) {
     suppressMessages(
@@ -330,7 +330,7 @@ get_screen_name_topost <-
 .export_twitter_file <-
   function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
     .preprocess_export(path = path, backup = backup, ...)
-    # NOTE: Can't use rtweet::write_csv() because it doesn't have `append`.
+    # Note: Can't use rtweet::write_csv() because it doesn't have `append`.
     # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
     data <- rtweet:::prepend_ids(data)
     write_csv(data, path, append = append, na = na, ...)
@@ -503,7 +503,7 @@ regenerate_sentiment_file <-
 
 .convert_ratio_log_scrape_to_last_scrape <-
   purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "ratio")
-# # NOTE: Change `col_sort` to "timestamp_post" here?
+# # Note: Change `col_sort` to "timestamp_post" here?
 .convert_ratio_log_scrape_to_last_post <-
   purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "text_post")
 

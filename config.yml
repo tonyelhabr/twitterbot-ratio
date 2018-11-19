@@ -16,12 +16,23 @@ default:
 
   tl_cache: false
 
+  # TODO: Implement these.
+  post_n_since_min: 25
+  post_hour_since_min: 23
+  # post_retweet_min: 25
+  # post_favorite_min: 25
+  post_ratio_den_min: 50
+  post_ratio_num_min: 10
+  post_frac_audience_den_min: 25
+  post_frac_audience_num_min: 25
+
+
   # Note: `post_delay` prevents the `.create_post()` function from being called.
   # Note: It is recommended to set this to true and leave the other `post_*` parameters
   # as they would otherwise be defined.
   post_delay: true
 
-  # NOTE: `post_status_id_sentinel` allows for the `.create_post()` function to be called, and is used
+  # Note: `post_status_id_sentinel` allows for the `.create_post()` function to be called, and is used
   # in the case that the `post_reply`, `post_retweet`, and `post_favorite` are all
   # set to `false` (i.e. nothing is posted). In this case, this value
   # tells the program not to record anything as "posted" (even though `text_post`

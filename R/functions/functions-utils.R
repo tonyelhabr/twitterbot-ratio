@@ -1,7 +1,7 @@
 
 
 
-# NOTE: This is a simplified verison of `tetidy::pull_distinctly()`.
+# Note: This is a simplified verison of `tetidy::pull_distinctly()`.
 .pull_distinctly <-
   function(data, col) {
     col <- enquo(col)
@@ -12,7 +12,7 @@
   }
 
 
-# NOTE: This function is inspired by the `.create_backup()` function (functions-db) in the sports-predict project.
+# Note: This function is inspired by the `.create_backup()` function (functions-db) in the sports-predict project.
 .create_backup <-
   function(path,
            ...,

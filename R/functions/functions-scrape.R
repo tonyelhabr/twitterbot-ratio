@@ -1,5 +1,5 @@
 
-# NOTE: See the sports-predict project (functions-db-tr).
+# Note: See the sports-predict project (functions-db-tr).
 .TIME <- Sys.time()
 .get_ymdhm <-
   function(time = NULL, resolution = 1L) {

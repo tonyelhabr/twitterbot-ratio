@@ -16,10 +16,10 @@ distinctify_ratio_log_scrape <-
     ratio_log_scrape_import <- import_ratio_log_scrape()
     ratio_log_scrape_export <-
       ratio_log_scrape_import %>%
-      # NOTE: This is "too naive".
+      # Note: This is "too naive".
       # distinct() %>% 
       group_by(status_id) %>% 
-      # NOTE: Not sure which is the "better" method.
+      # Note: Not sure which is the "better" method.
       filter(replies_count == max(replies_count)) %>% 
       # filter(timestamp_scrape == last(timestamp_scrape)) %>% 
       .arrange_ratio_df_at()

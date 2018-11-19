@@ -9,7 +9,7 @@
 # Reference: "^fearful face$"
 .get_chr_emoji_fear <-
   function() {
-   #  "\U0001f628"
+    # "\U0001f628"
     ""
   }
 
@@ -89,7 +89,7 @@
     } else {
 
       if(!is.null(ratio_last_post)) {
-        # NOTE: This data set should only have one record per screen name,
+        # Note: This data set should only have one record per screen name,
         # so there should not be any need to `slice()`.
         ratio_pastposted_last <-
           ratio_last_post %>%
@@ -98,7 +98,7 @@
             .status_id = status_id
           )
       } else {
-        # NOTE: Doing this in case `ratio_last_post` is not provided.
+        # Note: Doing this in case `ratio_last_post` is not provided.
         ratio_pastposted_last <-
           ratio_pastposted %>%
           arrange(desc(timestamp_post)) %>%
@@ -192,7 +192,7 @@
     # retweet = FALSE
     # favorite = FALSE
 
-    # NOTE: This is somewhat similar to `.preprocess_compare_n_rows()`.
+    # Note: This is somewhat similar to `.preprocess_compare_n_rows()`.
     if(sum(c(favorite, retweet, reply), na.rm = TRUE) < 1) {
       if(verbose) {
         msg <-
@@ -219,6 +219,7 @@
         )
     }
     if (reply) {
+      # Note: This doesn't work for including source tweet with reply.
       # resp <-
       #   rtweet::post_tweet(
       #     status = text_post,
@@ -243,7 +244,7 @@
     invisible(res)
   }
 
-# NOTE: Default for `screen_name` is `NULL` so that code can dynamically
+# Note: Default for `screen_name` is `NULL` so that code can dynamically
 # determine whether to post tweets for all screen names or just one.
 .do_post_ratio <-
   function(screen_name = NULL,
@@ -296,11 +297,44 @@
     ratio_log_scrape_filt <- ratio_log_scrape
 
     # TODO: What about the alternative?
+    # Note: This verbose function is only useful to avoid conflicts/renaming of `screen_name`
+    # in the `.do_post_ratio()` function.
+    .filter_ratio_log_scrape_byscreen_name <-
+      function(data, .screen_name, ...) {
+        data %>%
+          filter(screen_name == .screen_name)
+      }
+
+    .filter_ratio_log_scrape_byconfig <-
+      function(data, ...) {
+        data_filt0 <-
+          data %>%
+          filter(considered == 0L) %>%
+          filter(posted == 0L)
+
+        data_alt <- head(data, 0)
+
+        data_filt1 <-
+          data_filt0 %>%
+          arrange(desc(created_at))
+
+        if(n_row_filt < config$post_hour_since_min) {
+
+        }
+
+        n_row_filt <- nrow(data_filt0)
+        if(n_row_filt < config$post_n_since_min) {
+          return(data_alt )
+        }
+
+      }
+
     if (!is.null(screen_name)) {
-      .screen_name <- screen_name
       ratio_log_scrape_filt <-
         ratio_log_scrape_filt %>%
-        filter(screen_name == .screen_name)
+        .filter_ratio_log_scrape_byscreen_name(
+          screen_name = screen_name
+          )
     }
 
     ratio_log_scrape_filt <-
@@ -438,7 +472,7 @@
 
 do_post_ratio_all <-
   function(screen_name = NULL, ...) {
-    # NOTE: The interactive statement can be removed. It's purely for debugging purposes.
+    # Note: The interactive statement can be removed. It's purely for debugging purposes.
     if(interactive() | is.null(screen_name)) {
       screen_name <- get_screen_name_topost()
     }
