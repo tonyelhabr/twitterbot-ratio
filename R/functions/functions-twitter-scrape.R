@@ -77,8 +77,7 @@
 
     suppressMessages(
       rtweet::get_timeline(user = user, n = n, token = token, ...) %>%
-        .filter_tweet_type() %>%
-        .select_tl_cols_at()
+        .filter_tweet_type()
     )
   }
 

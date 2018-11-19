@@ -283,11 +283,12 @@ import_sentiment <-
       sentiment <- import_sentiment()
     }
 
-    data %>%
-      filter(category1 == "sports") %>%
-      .join_screen_name_and_sentiment(sentiment = sentiment) %>%
-      filter(user_mood %in% c("neutral", "negative")) %>%
-      filter(audience_mood %in% c("negative"))
+    # data %>%
+    #   filter(category1 == "sports") %>%
+    #   .join_screen_name_and_sentiment(sentiment = sentiment) %>%
+    #   filter(user_mood %in% c("neutral", "negative")) %>%
+    #   filter(audience_mood %in% c("negative"))
+    data
   }
 
 get_screen_name_toscrape <-
