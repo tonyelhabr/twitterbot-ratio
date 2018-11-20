@@ -1,12 +1,12 @@
 
-# .SCREEN_NAME <- c("RealSkipBayless", "stephenasmith", "NateSilver538", "bomani_jones")
-.SCREEN_NAME <- c("bomani_jones")
+# .USER <- c("RealSkipBayless", "stephenasmith", "NateSilver538", "bomani_jones")
+.USER <- c("bomani_jones")
 tl_init <-
   rtweet::get_timelines(
-    user = .SCREEN_NAME,
+    user = .USER,
     n = 100L
   )
 purrr::pwalk(
-  list(.SCREEN_NAME,, tl_init),
-  ~.do_scrape_ratio(screen_name = ..1, tl = ..2)
+  list(.USER,, tl_init),
+  ~.do_scrape_ratio(user = ..1, tl = ..2)
 )

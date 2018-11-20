@@ -1,11 +1,11 @@
 
 library("tidyverse")
 
-.screen_name <- "RealSkipBayless"
+.user <- "RealSkipBayless"
 .n_last <- 2L
 tl_raw <-
   rtweet::get_timeline(
-    user = .screen_name,
+    user = .user,
     n = .n_last
   )
 tl_raw %>% glimpse()
@@ -16,7 +16,7 @@ tl_raw_last$status_id
 tl_raw_last$user_id
 tl_raw_last$created_at
 
-q_search <- glue::glue("@{.screen_name} OR to:{.screen_name} OR {.screen_name}")
+q_search <- glue::glue("@{.user} OR to:{.user} OR {.user}")
 q_search
 
 reply_raw <-

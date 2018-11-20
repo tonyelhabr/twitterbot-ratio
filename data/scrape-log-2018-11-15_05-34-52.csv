@@ -1,4 +1,4 @@
-user_id,screen_name,created_at,status_id,favorite_count,retweet_count,text,reply_count,ratio,ratio_inv,timestamp_scrape
+user_id,user,created_at,status_id,favorite_count,retweet_count,text,reply_count,ratio,ratio_inv,timestamp_scrape
 x21129105,bomani_jones,2018-11-13T20:45:05Z,x1062446274480365568,12,0,4pm ET @bomani_jones  and @PabloTorre  will be on @HIGHNOONonESPN  #HighNoon #recordseries,1,0.08333333333333333,12,2018-11-14T15:15:00Z
 x21129105,bomani_jones,2018-11-13T14:28:39Z,x1062351541812822016,301,71,not sure anything is #hustlinbackwards quite like arguing about that jill scott video before 9:30 eastern.,28,0.07526881720430108,13.285714285714285,2018-11-14T15:15:00Z
 x21129105,bomani_jones,2018-11-13T19:15:04Z,x1062423617793863690,36,16,"new #TheRightTime! jimmy in philly, melo in houston, peter man...gone, y’all getting balled up by the pros, and the wu and tribe! https://t.co/sVzfSw1FSL",2,0.038461538461538464,26,2018-11-14T15:15:00Z

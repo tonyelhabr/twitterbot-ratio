@@ -1,34 +1,35 @@
 
 # Reference: sports-predict project (functions-scrape) for `reorder*()` and `select*()` functions below.
-.COLS_SCREEN_NAME_ORDER <-
+.COLS_USER_ORDER <-
   c(
-    "screen_name",
+    "user",
     "category1",
     "category2",
-    "user_sentiment",
-    "audience_sentiment"
+    "user_tone",
+    "audience_tone"
   )
 
-.COLS_SCREEN_NAME_INFO_ORDER <-
+.COLS_USER_INFO_ORDER <-
   c(
-    "screen_name",
+    "user",
     "followers_count",
     "statuses_count",
     "name",
-    "description"
+    "description",
+    "list"
   )
 
 
 .COLS_SENTIMENT_ORDER <-
   c(
-    "sentiment",
+    "tone",
     "mood"
   )
 
 .COLS_TL_ORDER <-
   c(
     "user_id",
-    "screen_name",
+    "user",
     "created_at",
     "status_id",
     "favorite_count",
@@ -118,9 +119,9 @@
 
 
 .validate_tl_df <- purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
-.validate_screen_name_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_ORDER)
-.validate_screen_name_info_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_INFO_ORDER)
-.validate_sentiment_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
+.validate_user_df <- purrr::partial(.validate_df, cols = .COLS_USER_ORDER)
+.validate_user_info_df <- purrr::partial(.validate_df, cols = .COLS_USER_INFO_ORDER)
+.validate_tone_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
 
 .validate_twitter_onerowpergrp_df <-
   function(data, col, ...) {
@@ -140,14 +141,14 @@
   }
 
 .validate_ratio_onerowpergrp_df <-
-  purrr::partial(.validate_twitter_onerowpergrp_df, col = "screen_name")
+  purrr::partial(.validate_twitter_onerowpergrp_df, col = "user")
 
-.validate_screen_name_vector <-
+.validate_user_vector <-
   function(x, ...) {
     stopifnot(is.character(x))
   }
 
-.validate_screen_name_1 <-
+.validate_user_1 <-
   function(x, ...) {
     stopifnot(is.character(x), length(x) == 1L)
   }
@@ -202,7 +203,7 @@
   }
 
 .reconvert_chr_cols_at <-
-  function(data, cols = str_subset(names(data), "_id|^text_|screen_name"), ...) {
+  function(data, cols = str_subset(names(data), "_id|^text_|user"), ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.character)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., "")))
@@ -264,77 +265,77 @@ import_ratio_last_post <-
     if(!is.null(f_validate)) {
       f_validate(data)
     }
-    # data <- .flatten_screen_name(data)
+    # data <- .flatten_user(data)
     .postprocess_import(data = data, path = path, ...)
   }
 
-import_screen_name <-
+import_user <-
   purrr::partial(
     .import_nontwitter_file,
-    path = config$path_screen_name,
-    f_validate = .validate_screen_name_df
+    path = config$path_user,
+    f_validate = .validate_user_df
 
     )
-import_screen_name_info <-
+import_user_info <-
   purrr::partial(
     .import_nontwitter_file,
-    path = config$path_screen_name_info,
-    f_validate = .validate_screen_name_info_df
+    path = config$path_user_info,
+    f_validate = .validate_user_info_df
   )
-import_sentiment <-
+import_tone <-
   purrr::partial(
     .import_nontwitter_file,
-    path = config$path_sentiment,
-    f_validate = .validate_sentiment_df
+    path = config$path_tone,
+    f_validate = .validate_tone_df
     )
 
 
-.flatten_screen_name <-
+.flatten_user <-
   function(data, ...) {
-    pull(data, screen_name)
+    pull(data, user)
   }
 
 # Note: This function requires that both data sets be non-`NULL`.
-.join_screen_name_and_sentiment <-
-  function(screen_name, sentiment, ...) {
+.join_user_and_tone <-
+  function(user, tone, ...) {
     suppressMessages(
-      screen_name %>%
-        left_join(sentiment %>% rename_all(funs(paste0("user_", .)))) %>%
-        left_join(sentiment %>% rename_all(funs(paste0("audience_", .))))
+      user %>%
+        left_join(tone %>% rename_all(funs(paste0("user_", .)))) %>%
+        left_join(tone %>% rename_all(funs(paste0("audience_", .))))
     )
   }
 
-.filter_screen_name <-
-  function(data, sentiment = NULL, ...) {
+.filter_user <-
+  function(data, tone = NULL, ...) {
     stopifnot(is.data.frame(data))
-    if(is.null(sentiment)) {
-      sentiment <- import_sentiment()
+    if(is.null(tone)) {
+      tone <- import_tone()
     }
 
     # data %>%
     #   filter(category1 == "sports") %>%
-    #   .join_screen_name_and_sentiment(sentiment = sentiment) %>%
+    #   .join_user_and_tone(tone = tone) %>%
     #   filter(user_mood %in% c("neutral", "negative")) %>%
     #   filter(audience_mood %in% c("negative"))
     data
   }
 
-get_screen_name_toscrape <-
+get_user_toscrape <-
   function(...) {
-    data <- import_screen_name()
+    data <- import_user()
     data %>%
-      .filter_screen_name() %>%
-      .flatten_screen_name()
+      .filter_user() %>%
+      .flatten_user()
   }
 
-get_screen_name_topost <-
+get_user_topost <-
   function(...) {
     ratio_log_scrape <- import_ratio_log_scrape()
     data <-
       ratio_log_scrape %>%
-      distinct(screen_name)
+      distinct(user)
     data %>%
-      .flatten_screen_name()
+      .flatten_user()
   }
 
 # export_xxx ----
@@ -396,14 +397,14 @@ export_ratio_last_post <-
 
 .export_tl_cache <-
   function(data,
-           screen_name,
+           user,
            ...,
            append = FALSE,
              backup = TRUE,
              path = config$path_tl_cache,
              file = tools::file_path_sans_ext(path),
              ext = tools::file_ext(path),
-             suffix = screen_name,
+             suffix = user,
              path_cache = sprintf("%s-%s.%s", file, suffix, ext)) {
     .export_twitter_file(
       data = data,
@@ -414,11 +415,11 @@ export_ratio_last_post <-
     )
   }
 
-regenerate_sentiment_file <-
-  function(screen_name = NULL,
-           sentiment = NULL,
+regenerate_tone <-
+  function(user = NULL,
+           tone = NULL,
            ...,
-           path = config$path_sentiment,
+           path = config$path_tone,
            backup = TRUE,
            na = "",
            append = FALSE,
@@ -426,32 +427,32 @@ regenerate_sentiment_file <-
 
     .preprocess_export(path = path, backup = backup)
 
-    if(is.null(screen_name)) {
-      screen_name <- import_screen_name()
+    if(is.null(user)) {
+      user <- import_user()
     }
-    # Note: This validation is intended for the case where `screen_name` is not `NULL`.
-    .validate_screen_name_df(screen_name)
+    # Note: This validation is intended for the case where `user` is not `NULL`.
+    .validate_user_df(user)
 
-    # Note: `sentiment_old` is purely for comparison's sake.
-    if(is.null(sentiment)) {
+    # Note: `tone_old` is purely for comparison's sake.
+    if(is.null(tone)) {
       # Note: Don't throw an error because the file may not exist
       # (before the first time it is created).
-      .f <- purrr::possibly(import_sentiment, otherwise = NULL)
-      sentiment_old <- .f()
+      .f <- purrr::possibly(import_tone, otherwise = NULL)
+      tone_old <- .f()
     }
 
-    sentiment_exist <-
-      screen_name %>%
-      gather(actor, sentiment, matches("sentiment$")) %>%
-      mutate_at(vars(actor), funs(str_remove_all(., "_sentiment$"))) %>%
-      distinct(sentiment)
+    tone_exist <-
+      user %>%
+      gather(actor, tone, matches("tone$")) %>%
+      mutate_at(vars(actor), funs(str_remove_all(., "_tone$"))) %>%
+      distinct(tone)
 
     suppressMessages(
-      sentiment_new <-
-        sentiment_exist %>%
+      tone_new <-
+        tone_exist %>%
         left_join(
           tribble(
-            ~sentiment, ~mood,
+            ~tone, ~mood,
             "debate", "negative",
             "fun", "positive",
             "mockery", "negative",
@@ -466,29 +467,29 @@ regenerate_sentiment_file <-
     )
 
     .compare_n_row_le(
-      data1 = sentiment_exist,
-      data2 = sentiment_new,
+      data1 = tone_exist,
+      data2 = tone_new,
       message = TRUE,
       stop = FALSE
     )
 
-    if(!is.null(sentiment_old)) {
+    if(!is.null(tone_old)) {
       .compare_n_row_le(
-        data1 = sentiment_old,
-        data2 = sentiment_new,
+        data1 = tone_old,
+        data2 = tone_new,
         message = TRUE,
         stop = FALSE
       )
     }
 
-    write_csv(x = sentiment_new, path = path, na = na, append = append, ...)
-    .postprocess_export(data = sentiment_new, path = path, ...)
+    write_csv(x = tone_new, path = path, na = na, append = append, ...)
+    .postprocess_export(data = tone_new, path = path, ...)
   }
 
 # TODO: Make a more general `regenarate*()` function to combine with the above one?
-regenerate_screen_name_info_file <-
-  function(screen_name = NULL,
-           screen_name_info = NULL,
+regenerate_user_info <-
+  function(user = NULL,
+           user_info = NULL,
            ...,
            path = config$path_scree_name_info,
            backup = TRUE,
@@ -498,39 +499,41 @@ regenerate_screen_name_info_file <-
 
     .preprocess_export(path = path, backup = backup)
 
-    if(is.null(screen_name)) {
-      screen_name <- get_screen_name_toscrape()
+    if(is.null(user)) {
+      user <- get_user_toscrape()
     }
-    # Note: This validation is intended for the case where `screen_name` is not `NULL`.
-    .validate_screen_name_vector(screen_name)
+    # Note: This validation is intended for the case where `user` is not `NULL`.
+    .validate_user_vector(user)
 
-    if(is.null(screen_name_info)) {
-      .f <- purrr::possibly(import_screen_name_info, otherwise = NULL)
-      screen_name_info_old <- .f()
+    if(is.null(user_info)) {
+      .f <- purrr::possibly(import_user_info, otherwise = NULL)
+      user_info_old <- .f()
     }
 
-    screen_name_info_new <-
-      screen_name %>%
+    user_info_new <-
+      user %>%
       rtweet::lookup_users() %>%
+      mutate(list = "") %>%
+      select(one_of(.COLS_USER_INFO_ORDER))
 
-    if(!is.null(screen_name_info_old)) {
+    if(!is.null(user_info_old)) {
       .compare_n_row_le(
-        data1 = screen_name_info_old,
-        data2 = screen_name_info_new,
+        data1 = user_info_old,
+        data2 = user_info_new,
         message = TRUE,
         stop = FALSE
       )
     }
 
-    write_csv(x = screen_name_info_new, path = path, na = na, append = append, ...)
-    .postprocess_export(data = screen_name_info_new, path = path, ...)
+    write_csv(x = user_info_new, path = path, na = na, append = append, ...)
+    .postprocess_export(data = user_info_new, path = path, ...)
   }
 
 # convert_xxx ----
 # TODO: Implement plural version of `col_filt`?
 .convert_ratio_log_scrape_to_last_file <-
   function(data,
-           col_grp = "screen_name",
+           col_grp = "user",
            col_sort = "created_at",
            col_filt = "ratio",
            ...,
@@ -582,27 +585,35 @@ regenerate_screen_name_info_file <-
 
 # do_xxx ----
 .preprocess_do_action_ratio <-
-  function(screen_name = NULL, ...) {
-    if(is.null(screen_name)) {
-      screen_name <- get_screen_name_toscrape()
+  function(user = NULL, ...) {
+    if(is.null(user)) {
+      user <- get_user_toscrape()
     }
-    .validate_screen_name(screen_name)
-    invisible(screen_name)
+    .validate_user(user)
+    invisible(user)
+  }
+
+# misc ----
+# Note: This is used for both `scrape` and `post` (although it was initially
+# only developed to used for `scrape`).
+.make_twitter_url_reply <-
+  function(.user, .status_id, ...) {
+    sprintf("https://twitter.com/%s/status/%s", .user, .status_id)
   }
 
 # # TODO: Use these after all functions are "stable"/"finalized" because
 # # these are very abstract.
 # .do_action_ratio <-
-#   function(screen_name = NULL, ..., .f) {
-#     screen_name <- .preprocess_do_action_ratio(screen_name = screen_name)
-#     purrr::walk(screen_name,, ~.f(.x, ...))
+#   function(user = NULL, ..., .f) {
+#     user <- .preprocess_do_action_ratio(user = user)
+#     purrr::walk(user,, ~.f(.x, ...))
 #   }
 
 .COLS_LISTS_MEMBERS_ORDER <-
   c(
     "user_id",
     "name",
-    "screen_name",
+    "user",
     "location",
     "description",
     "url",
@@ -646,7 +657,7 @@ regenerate_screen_name_info_file <-
   c(
     "user_id",
     "name",
-    "screen_name",
+    "user",
     "location",
     "description",
     "url",

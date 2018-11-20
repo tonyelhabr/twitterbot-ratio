@@ -1,8 +1,8 @@
 default:
-  path_screen_name: "data-raw/screen_name.csv"
-  path_sentiment: "data-raw/sentiment.csv"
+  path_user: "data-raw/user.csv"
+  path_tone: "data-raw/tone.csv"
 
-  path_screen_name_info: "data-raw/screen_name-info.csv"
+  path_user_info: "data-raw/user-info.csv"
 
   path_ratio_last_scrape: "data/ratio-last-scrape.csv"
   path_ratio_log_scrape: "data/ratio-log-scrape.csv"
@@ -11,7 +11,7 @@ default:
   path_ratio_last_post: "data/ratio-last-post.csv"
 
   # Note: `path_ratio_log_post` is not currently used.
-  path_ratio_log_post: "data/ratio-log-post.csv"
+  # path_ratio_log_post: "data/ratio-log-post.csv"
 
   n_hour_lag_scrape: 12
   n_tl_new: 100
@@ -29,10 +29,10 @@ default:
   post_frac_audience_num_min: 25
 
 
-  # Note: `post_delay` prevents the `.create_post()` function from being called.
+  # Note: `post` prevents the `.create_post()` function from being called.
   # Note: It is recommended to set this to true and leave the other `post_*` parameters
   # as they would otherwise be defined.
-  post_delay: true
+  post: true
 
   # Note: `post_status_id_sentinel` allows for the `.create_post()` function to be called, and is used
   # in the case that the `post_reply`, `post_retweet`, and `post_favorite` are all
@@ -40,7 +40,7 @@ default:
   # tells the program not to record anything as "posted" (even though `text_post`
   # is generated). It will cause the program to revert potential updates to the
   # data in `path_ratio_log_scrape` and `path_ratio_last_post`.
-  # Additionally, this value supplements the usage of `post_delay` = `true`, so that
+  # Additionally, this value supplements the usage of `post` = `true`, so that
   # actions that would occur after posting a tweet get run. This is useful
   # for checking that the code would work when it comes time to actually make the post.
   post_status_id_sentinel: "-42"
@@ -52,10 +52,9 @@ default:
   verbose_scrape: true
   verbose_post: true
   verbose_regenerate: true
-  # Todo: Break up this into more speicific components?
-  verbose_file: false
 
-  # TODO: Make this more specific?
+  # TODO: Break up these into more specific components?
+  verbose_file: false
   backup_file: true
 
   token: !expr rtweet::get_token()

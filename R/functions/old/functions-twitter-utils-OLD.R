@@ -3,7 +3,7 @@
   function(...) {
     tibble(
       user_id = character(),
-      screen_name = character(),
+      user = character(),
       created_at = lubridate::as_datetime(character()),
       status_id = character(),
       favorite_count = integer(),
@@ -28,13 +28,13 @@
 
 
 .validate_ratio_last_df <-
-  function(ratio_last, screen_name, ...) {
+  function(ratio_last, user, ...) {
     n_status_id <-
       ratio_last %>%
       count(status_id) %>%
       filter(n > 1L)
     if(ifelse(nrow(n_status_id) > 0L, TRUE, FALSE)) {
-      msg <- sprintf("Expected 1 `status_id`. Instead, found %s statuses for `%s`.", n_status_id, !!screen_name)
+      msg <- sprintf("Expected 1 `status_id`. Instead, found %s statuses for `%s`.", n_status_id, !!user)
       stop(msg, call. = FALSE)
     }
   }

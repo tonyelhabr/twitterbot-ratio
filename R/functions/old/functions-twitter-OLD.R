@@ -1,19 +1,19 @@
 
-# TODO: Programmatically figure out .N_SCREEN_NAME?
-# .N_SCREEN_NAME <- 3L
-# .N_SCREEN_NAME <- ifelse(file.exists(config$path_ratio_last_scrape), import_ratio_last_scrape() %>% nrow(), 3L)
-.N_SCREEN_NAME <- 4L
+# TODO: Programmatically figure out .N_USER?
+# .N_USER <- 3L
+# .N_USER <- ifelse(file.exists(config$path_ratio_last_scrape), import_ratio_last_scrape() %>% nrow(), 3L)
+.N_USER <- 4L
 .MAX_PER_SESSION <- 18000L
 .N_SCALE <- 1L
-# .N_SCALE <- 1L / (.N_SCREEN_NAME)
+# .N_SCALE <- 1L / (.N_USER)
 .N_SEARCH <- .N_SCALE * .MAX_PER_SESSION %>% floor() %>% as.integer()
 # .N_SEARCH <- .MAX_PER_SESSION
 
 .get_replies_since <-
-  function(screen_name,
+  function(user,
            since_id,
            ...,
-           q = sprintf("@%s OR to:%s OR %s", screen_name, screen_name, screen_name),
+           q = sprintf("@%s OR to:%s OR %s", user, user, user),
            # n = 10000L,
            n = .N_SEARCH,
            include_rts = FALSE,
@@ -46,7 +46,7 @@
 .arrange_ratio_df_at <-
   function(data, ...) {
     data %>%
-      group_by(screen_name) %>%
+      group_by(user) %>%
       arrange(desc(ratio), .by_group = TRUE) %>%
       ungroup()
   }
@@ -59,11 +59,11 @@
     quiet = FALSE
   )
 
-.describe_screen_name <-
+.describe_user <-
   function(tl, ratio, ...) {
 
-    nm_ratio <- ratio %>% .pull_distinctly(screen_name)
-    nm_tl <- tl %>% .pull_distinctly(screen_name)
+    nm_ratio <- ratio %>% .pull_distinctly(user)
+    nm_tl <- tl %>% .pull_distinctly(user)
     nm_diff1 <- setdiff(nm_ratio, nm_tl)
     nm_diff2 <- setdiff(nm_tl, nm_ratio)
     if(length(nm_diff1) > 0L) {
@@ -87,9 +87,9 @@
   function(tl, ...) {
     tl_cnt <-
       tl %>%
-      count(screen_name)
+      count(user)
     tl_cnt %>%
-      mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, screen_name)) %>%
+      mutate(msg = sprintf("Scoring %s tweet(s) for %s.", n, user)) %>%
       pull(msg) %>%
       purrr::walk(message)
     invisible(tl)
@@ -107,8 +107,8 @@ count_replies <-
       mutate(
         data =
           purrr::pmap(
-            list(screen_name, since_id),
-            ~ .get_replies_since(screen_name = ..1, since_id = ..2)
+            list(user, since_id),
+            ~ .get_replies_since(user = ..1, since_id = ..2)
           )
       )
 

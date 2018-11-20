@@ -29,8 +29,11 @@ if (!interactive()) {
 }
 
 if (length(args) == 0) {
+  if(grepl("^O:", dir_proj)) {
   args <- "default"
-  # args <- "scrape"
+  } else {
+    args <- "scrape"
+  }
 } else {
   if (!(any(c("post", "scrape") %in% args))) {
     message(sprintf('You must specify either "scrape" or "post" (not "%s"). Defaulting to "default".', args))
@@ -54,7 +57,7 @@ f <-
   )
 
 # Note: Using `try()` instead of `purrr::possibly()` to avoid loading any packages
-# (in the case that the system won't be able to run this script anyways.)
+# (in the case that the system won't be able to run this script anyways.\).
 try(pre_auto(), silent = TRUE)
 f()
 try(post_auto(), silent = TRUE)

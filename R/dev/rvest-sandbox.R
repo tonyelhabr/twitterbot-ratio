@@ -1,9 +1,9 @@
 
 
 
-screen_name <- "Foxworth24"
+user <- "Foxworth24"
 status_id <- "1063469402870419456"
-url <- sprintf("https://twitter.com/%s/status/%s", screen_name, status_id)
+url <- sprintf("https://twitter.com/%s/status/%s", user, status_id)
 selector <- sprintf("#profile-tweet-action-reply-count-aria-%s", status_id)
 reply_count <-
   url %>%

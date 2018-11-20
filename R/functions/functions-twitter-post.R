@@ -1,59 +1,6 @@
 
-# Reference: rtweet::emojis %>% filter(description %>% str_detect("^fire$"))
-.get_chr_emoji_fire <-
-  function() {
-    # "\U0001f525"
-    ""
-  }
-
-# Reference: "^fearful face$"
-.get_chr_emoji_fear <-
-  function() {
-    # "\U0001f628"
-    ""
-  }
-
-# Reference: "^grinning face$"
-.get_chr_emoji_smile <-
-  function() {
-    # "\U0001f600"
-    ""
-  }
-
-# Reference: "^thumbs up$"
-.get_chr_emoji_thumbsup <-
-  function() {
-    # "\U0001f44d"
-    ""
-  }
-
-.prettify_timestamp_post <-
-  function(x) {
-    # stopifnot(lubridate::is.timepoint(x))
-    strftime(x, "%I:%M %p, %m/%d/%Y")
-  }
-
-.slice_ratio_max <-
-  function(data, ...) {
-    res <-
-      data %>%
-      filter(ratio == max(ratio, na.rm = TRUE)) %>%
-      slice(1)
-
-    .validate_onerow_df(res)
-    res
-  }
-
-.filter_ratio_log_scrape_posted <-
-  function(data, .screen_name, .status_id, ...) {
-    data %>%
-      filter(screen_name == .screen_name) %>%
-      filter(status_id != .status_id) %>%
-      filter(posted == 1L)
-  }
-
 .create_text_post <-
-  function(screen_name,
+  function(user,
            status_id,
            ratio,
            ratio_log_scrape,
@@ -64,14 +11,14 @@
     text_post <-
       sprintf(
         "Congratulations @%s on your ratio of %.02f!",
-        screen_name,
+        user,
         ratio
       )
 
     ratio_pastposted <-
       ratio_log_scrape %>%
       .filter_ratio_log_scrape_posted(
-        .screen_name = screen_name,
+        .user = user,
         .status_id = status_id
       )
 
@@ -94,7 +41,7 @@
         ratio_pastposted_last <-
           ratio_last_post %>%
           .filter_ratio_log_scrape_posted(
-            .screen_name = screen_name,
+            .user = user,
             .status_id = status_id
           )
       } else {
@@ -168,7 +115,7 @@
           "%s %s",
           text_post,
           .make_twitter_url_reply(
-            .screen_name = screen_name,
+            .user = user,
             .status_id = status_id
           )
         )
@@ -177,7 +124,7 @@
   }
 
 .ratio_post <-
-  function(screen_name,
+  function(user,
            status_id,
            text_post,
            ...,
@@ -201,7 +148,7 @@
               "`reply`, `retweet`, and `favorite` are each `FALSE`. ",
               "Returning `sentinel` (for `status_id_post`) for \"%s\"."
             ),
-            screen_name
+            user
           )
         message(msg)
       }
@@ -244,18 +191,18 @@
     invisible(res)
   }
 
-# Note: Default for `screen_name` is `NULL` so that code can dynamically
+# Note: Default for `user` is `NULL` so that code can dynamically
 # determine whether to post tweets for all screen names or just one.
 .do_post_ratio <-
-  function(screen_name = NULL,
+  function(user = NULL,
            ratio_log_scrape = NULL,
            ratio_last_post = NULL,
            ...,
-           delay = config$post_delay,
+           delay = config$post,
            sentinel = config$post_status_id_sentinel,
            verbose = config$verbose_post) {
 
-    # screen_name = "PFTCommenter"
+    # user = "PFTCommenter"
     # ratio_log_scrape = NULL
     # ratio_last_post = NULL
     # verbose = config$verbose_post
@@ -263,7 +210,7 @@
     # TODO (Long-term): Write a function to do the same pre-processing for the
     # `do_scrape/ratio_post()` functions.
     message(rep("-", 80L))
-    .validate_screen_name_1(screen_name)
+    .validate_user_1(user)
 
     if (is.null(ratio_log_scrape)) {
       ratio_log_scrape <- .import_ratio_log_scrape_possibly()
@@ -297,44 +244,12 @@
     ratio_log_scrape_filt <- ratio_log_scrape
 
     # TODO: What about the alternative?
-    # Note: This verbose function is only useful to avoid conflicts/renaming of `screen_name`
-    # in the `.do_post_ratio()` function.
-    .filter_ratio_log_scrape_byscreen_name <-
-      function(data, .screen_name, ...) {
-        data %>%
-          filter(screen_name == .screen_name)
-      }
-
-    .filter_ratio_log_scrape_byconfig <-
-      function(data, ...) {
-        data_filt0 <-
-          data %>%
-          filter(considered == 0L) %>%
-          filter(posted == 0L)
-
-        data_alt <- head(data, 0)
-
-        data_filt1 <-
-          data_filt0 %>%
-          arrange(desc(created_at))
-
-        if(n_row_filt < config$post_hour_since_min) {
-
-        }
-
-        n_row_filt <- nrow(data_filt0)
-        if(n_row_filt < config$post_n_since_min) {
-          return(data_alt )
-        }
-
-      }
-
-    if (!is.null(screen_name)) {
+    if (!is.null(user)) {
       ratio_log_scrape_filt <-
         ratio_log_scrape_filt %>%
-        .filter_ratio_log_scrape_byscreen_name(
-          screen_name = screen_name
-          )
+        .filter_ratio_log_scrape_byuser(
+          user = user
+        )
     }
 
     ratio_log_scrape_filt <-
@@ -344,7 +259,7 @@
 
     if(nrow(ratio_log_scrape_filt) == 0L) {
       if(verbose) {
-        msg <- sprintf("No tweet to post about \"%s\".", screen_name)
+        msg <- sprintf("No tweet to post about \"%s\".", user)
         message(msg)
         return(NULL)
       }
@@ -369,9 +284,9 @@
       mutate(
         text_post =
           purrr::pmap_chr(
-            list(screen_name, status_id, ratio),
+            list(user, status_id, ratio),
             ~ .create_text_post(
-              screen_name = ..1,
+              user = ..1,
               status_id = ..2,
               ratio = ..3,
               ratio_log_scrape = ratio_log_scrape,
@@ -402,9 +317,9 @@
         mutate(
           status_id_post =
             purrr::pmap_chr(
-              list(screen_name, status_id, text_post),
+              list(user, status_id, text_post),
               ~.ratio_post(
-                screen_name = ..1,
+                user = ..1,
                 status_id = ..2,
                 text_post = ..3
               )
@@ -454,7 +369,7 @@
               "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
               "being reverted (because `sentinel` was detected) for \"%s\"."
           ),
-          screen_name
+          user
           )
         message(msg)
       }
@@ -471,13 +386,16 @@
 
 
 do_post_ratio_all <-
-  function(screen_name = NULL, ...) {
+  function(user = NULL, ..., backup = TRUE) {
     # Note: The interactive statement can be removed. It's purely for debugging purposes.
-    if(interactive() | is.null(screen_name)) {
-      screen_name <- get_screen_name_topost()
+    if(interactive() | is.null(user)) {
+      user <- get_user_topost()
     }
-    .validate_screen_name_vector(screen_name)
-    # s.create_backup(path = config$path_ratio_log_post)
-    purrr::walk(screen_name, ~.do_post_ratio(screen_name = .x))
+    .validate_user_vector(user)
+
+    if(backup) {
+      .create_backup(path = config$path_ratio_log_scrape)
+    }
+    purrr::walk(user, ~.do_post_ratio(user = .x))
   }
 

@@ -30,14 +30,14 @@
 # list_gov
 
 ratio_log_scrape <- import_ratio_log_scrape()
-screen_name <-
+user <-
   ratio_log_scrape %>%
-  tetidy::pull_distinctly(screen_name)
-screen_name <- get_screen_name_toscrape()
-screen_name_info <-
-  screen_name %>%
+  tetidy::pull_distinctly(user)
+user <- get_user_toscrape()
+user_info <-
+  user %>%
   rtweet::lookup_users() %>%
-  select(screen_name, followers_count, statuses_count, name, description)
-screen_name_info
-screen_name_info %>% teproj::export_path(config$path_screen_name_info)
+  select(user, followers_count, statuses_count, name, description)
+user_info
+user_info %>% teproj::export_path(config$path_user_info)
 

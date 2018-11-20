@@ -15,14 +15,14 @@ img_ts <- rtweet::tweet_shot(ratio_top$status_id)
 #   glue::glue(
 #     "I've been following some pundits the past couple of days and keeping track of their ",
 #     "ratios (i.e. replies / (retweets + favorites). ",
-#     "I found that {ratio_top$screen_name} scored the highest with a ratio of {sprintf('%.02f', ratio_top$ratio)}. ",
+#     "I found that {ratio_top$user} scored the highest with a ratio of {sprintf('%.02f', ratio_top$ratio)}. ",
 #     "(reply # = {ratio_top$reply_count}, ",
 #     "retweet # = {ratio_top$retweet_count}, ",
 #     "favorite # = {ratio_top$favorite_count})."
 #   )
 msg <-
   glue::glue(
-    "Congratulations @{ratio_top$screen_name} on your ratio of {sprintf('%.02f', ratio_top$ratio)}!"
+    "Congratulations @{ratio_top$user} on your ratio of {sprintf('%.02f', ratio_top$ratio)}!"
   )
 # msg
 # nchar(msg)

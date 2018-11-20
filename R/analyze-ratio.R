@@ -1,17 +1,17 @@
 
 ratio_log_scrape <- import_ratio_log_scrape()
-screen_name_info # <- import_screen_name_info()
+user_info # <- import_user_info()
 
 # ratio_log_scrape
-ratio_log_scrape %>% count(screen_name, sort = TRUE)
+ratio_log_scrape %>% count(user, sort = TRUE)
 ratio_log_tidy <-
   ratio_log_scrape %>%
   left_join(
-    screen_name_info %>%
-      # select(screen_name, n_follower = followers_count, n_tweet = statuses_count)
-      select(screen_name, followers_count, statuses_count)
+    user_info %>%
+      # select(user, n_follower = followers_count, n_tweet = statuses_count)
+      select(user, followers_count, statuses_count)
   ) %>%
-  group_by(screen_name) %>%
+  group_by(user) %>%
   mutate_at(vars(created_at), funs(max(.), min(.), n())) %>%
   # select(max, min, n, everything()) %>%
   mutate(hour_between = (difftime(max, min, units = "hours") / n) %>% as.numeric()) %>%
