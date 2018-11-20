@@ -46,6 +46,7 @@
   )
 .COLS_RATIO_SCORE_ORDER <-
   c(
+    "qualified",
     "considered",
     "posted",
     "status_id_post",
@@ -599,6 +600,13 @@ regenerate_user_info <-
 .make_twitter_url_reply <-
   function(.user, .status_id, ...) {
     sprintf("https://twitter.com/%s/status/%s", .user, .status_id)
+  }
+
+# Note: This verbose function is useful to avoid conflicts/renaming of `user`
+# (initially in the `.do_post_ratio()` function, but perhaps elsewhere as well).
+.filter_byuser <-
+  function(data, .user, ...) {
+    data %>% filter(user == .user)
   }
 
 # # TODO: Use these after all functions are "stable"/"finalized" because

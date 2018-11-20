@@ -23,10 +23,10 @@ default:
   post_hour_since_min: 23
   # post_retweet_min: 25
   # post_favorite_min: 25
-  post_ratio_den_min: 50 # retweet + favorite
-  post_ratio_num_min: 10 # reply
-  post_frac_audience_den_min: 25
-  post_frac_audience_num_min: 25
+  # post_ratio_den_min: 50 # retweet + favorite
+  # post_ratio_num_min: 10 # reply
+  post_ratio_den_min_frac: 0.0001
+  post_ratio_num_min_frac: 0.0001
 
 
   # Note: `post` prevents the `.create_post()` function from being called.

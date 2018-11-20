@@ -17,7 +17,7 @@
 
     ratio_pastposted <-
       ratio_log_scrape %>%
-      .filter_ratio_log_scrape_posted(
+      .slice_ratio_log_pastposted(
         .user = user,
         .status_id = status_id
       )
@@ -40,7 +40,7 @@
         # so there should not be any need to `slice()`.
         ratio_pastposted_last <-
           ratio_last_post %>%
-          .filter_ratio_log_scrape_posted(
+          .slice_ratio_log_pastposted(
             .user = user,
             .status_id = status_id
           )
@@ -230,7 +230,8 @@
             sprintf("Creating missing `ratio_last_post` file from `ratio_log_scrape`.")
           message(msg)
         }
-        ratio_last_post <- .convert_ratio_log_scrape_to_last_post(ratio_log_scrape)
+        ratio_last_post <-
+          .convert_ratio_log_scrape_to_last_post(ratio_log_scrape)
         export_ratio_last_post(ratio_last_post)
       }
     }
@@ -241,21 +242,12 @@
     .validate_ratio_df_robustly(ratio_last_post)
     .validate_ratio_onerowpergrp_df(ratio_last_post)
 
-    ratio_log_scrape_filt <- ratio_log_scrape
-
-    # TODO: What about the alternative?
-    if (!is.null(user)) {
-      ratio_log_scrape_filt <-
-        ratio_log_scrape_filt %>%
-        .filter_ratio_log_scrape_byuser(
-          user = user
-        )
-    }
-
+    # browser()
     ratio_log_scrape_filt <-
-      ratio_log_scrape_filt %>%
-      filter(considered == 0L) %>%
-      filter(posted == 0L)
+      ratio_log_scrape %>%
+      .filter_byuser(.user = user) %>%
+      .filter_ratio_log_basic() %>%
+      .filter_ratio_log_byconfig(.user = user)
 
     if(nrow(ratio_log_scrape_filt) == 0L) {
       if(verbose) {
@@ -265,7 +257,12 @@
       }
     }
 
-    ratio_topost_raw <- .slice_ratio_max(ratio_log_scrape_filt)
+    # Note: Should I filter again because the `frac` values have only been
+    # marked as considered and not filtered out yet?
+    ratio_topost_raw <-
+      ratio_log_scrape_filt %>%
+      .filter_ratio_log_basic() %>%
+      .slice_ratio_max()
 
     suppressMessages(
       ratio_notposted_raw <-
@@ -388,8 +385,11 @@
 do_post_ratio_all <-
   function(user = NULL, ..., backup = TRUE) {
     # Note: The interactive statement can be removed. It's purely for debugging purposes.
-    if(interactive() | is.null(user)) {
+    if(interactive() || is.null(user)) {
       user <- get_user_topost()
+      if(interactive()) {
+        user <- user[1:2]
+      }
     }
     .validate_user_vector(user)
 

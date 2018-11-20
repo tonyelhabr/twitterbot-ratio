@@ -137,7 +137,7 @@
 
 do_scrape_ratio_all <-
   function(user = NULL, ..., backup = TRUE) {
-    if(interactive() | is.null(user)) {
+    if(interactive() || is.null(user)) {
       user <- get_user_toscrape()
       if(interactive()) {
         user <- user[1:5]
@@ -145,7 +145,7 @@ do_scrape_ratio_all <-
     }
     .validate_user_vector(user)
 
-    if(interactive() | backup) {
+    if(interactive() || backup) {
       .create_backup(path = config$path_ratio_log_scrape)
     }
     purrr::walk(user, ~.do_scrape_ratio(user = .x))

@@ -77,7 +77,7 @@
 
 .rename_tl <-
   function(data, ...) {
-    data %>% rename(user = screen_name) %>%
+    data %>% rename(user = screen_name)
   }
 
 .get_tl_first <-

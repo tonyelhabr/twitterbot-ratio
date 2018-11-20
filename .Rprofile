@@ -30,7 +30,7 @@ rm("paths_funcs")
 config <- config::get()
 
 # NOTE: Not sure why this isn't working from the .Renviron file.
-# options(readr.num_columns = 0)
+options(readr.num_columns = 0)
 
 # user <- import_user()
 regenerate_tone()

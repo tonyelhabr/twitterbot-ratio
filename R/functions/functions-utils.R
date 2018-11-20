@@ -12,7 +12,8 @@
   }
 
 
-# Note: This function is inspired by the `.create_backup()` function (functions-db) in the sports-predict project.
+# Note: This function is inspired by the `.create_backup()` function
+# in the sports-predict project.(See the "functions-db" file.)
 .create_backup <-
   function(path,
            ...,
@@ -20,6 +21,7 @@
            ext = tools::file_ext(path),
            suffix_backup = format(Sys.time(), "%Y-%m-%d_%H-%M-%S"),
            path_backup = sprintf("%s-%s.%s", file, suffix_backup, ext),
+           clean = FALSE,
            verbose = config$verbose_file) {
     if (!file.exists(path)) {
       if(verbose) {
@@ -44,7 +46,10 @@
         sprintf("Backed up %s before exporting to %s.", path_backup, path)
       message(msg)
     }
-    path_backup
+    if(clean) {
+      .clean_backup(path = path, ...)
+    }
+    invisible(path_backup)
   }
 
 .clean_backup <-
@@ -207,3 +212,59 @@
     }
     invisible(TRUE)
   }
+
+# TODO: Implement something closer to `print.data.table()`?
+# (See https://github.com/Rdatatable/data.table/blob/88439d973f54cb650db0ee2f9d964a363470cd16/R/print.data.table.R.)
+headfoot_at <-
+  function(.data, col = NULL, n = NULL, ..., na.rm = TRUE) {
+    stopifnot(is.data.frame(.data))
+    if(!is.null(col)) {
+      stopifnot(is.character(col))
+    }
+
+    is_grouped <- ifelse(is.null(dplyr::groups(.data)), FALSE, TRUE)
+    if (is_grouped) {
+      # browser()
+      cols_grp_chr <- as.character(dplyr::groups(.data))
+      cols_grp_syms <- rlang::syms(cols_grp_chr)
+      .data <- dplyr::group_by(.data, !!!cols_grp_syms)
+      if(is.null(n)) {
+        n <- 3L
+      }
+    } else {
+      cols_grp <- NULL
+      if(is.null(n)) {
+        n <- 5L
+      }
+    }
+
+    .n <- n
+    if(!is.null(col)) {
+      col_sym <- sym(col)
+      if(is_grouped) {
+        msg <- "Not implemented currently."
+        message(msg)
+      }
+      res <-
+        dplyr::filter(.data, (!!col_sym <= .n) | !!col_sym > (max(!!col_sym, na.rm = na.rm) - .n))
+    } else {
+
+      if(is_grouped) {
+        res <- dplyr::do(.data, dplyr::slice(.data, c((1L:.n), (n() - .n + 1L):n())))
+        res <- dplyr::ungroup(res)
+      } else {
+        .n_row <- nrow(.data)
+        res <-
+          dplyr::slice(.data, c((1L:.n), ((.n_row - .n + 1L):.n_row)))
+      }
+    }
+    res
+  }
+
+# mtcars %>%
+#   as_tibble() %>%
+#   headfoot_at()
+# mtcars %>%
+#   as_tibble() %>%
+#   group_by(cyl) %>%
+#   headfoot_at()
