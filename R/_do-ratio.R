@@ -1,6 +1,6 @@
 
 # Note: command is /c C:/Users/aelhabr/Documents/R/R-3.4.0/bin/Rscript.exe "O:/_other/projects/twitterbot-ratio/R/_scrape-ratio.R" abc
-
+# rate_limit <- rtweet::rate_limit(token = rtweet::get_token())
 if (!interactive()) {
   args <- commandArgs(trailingOnly = TRUE)
 
@@ -30,6 +30,7 @@ if (!interactive()) {
 
 if (length(args) == 0) {
   args <- "default"
+  # args <- "scrape"
 } else {
   if (!(any(c("post", "scrape") %in% args))) {
     message(sprintf('You must specify either "scrape" or "post" (not "%s"). Defaulting to "default".', args))

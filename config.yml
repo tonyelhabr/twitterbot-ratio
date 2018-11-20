@@ -2,6 +2,8 @@ default:
   path_screen_name: "data-raw/screen_name.csv"
   path_sentiment: "data-raw/sentiment.csv"
 
+  path_screen_name_info: "data-raw/screen_name-info.csv"
+
   path_ratio_last_scrape: "data/ratio-last-scrape.csv"
   path_ratio_log_scrape: "data/ratio-log-scrape.csv"
   path_tl_cache: "data/tl-cache.csv"
@@ -21,8 +23,8 @@ default:
   post_hour_since_min: 23
   # post_retweet_min: 25
   # post_favorite_min: 25
-  post_ratio_den_min: 50
-  post_ratio_num_min: 10
+  post_ratio_den_min: 50 # retweet + favorite
+  post_ratio_num_min: 10 # reply
   post_frac_audience_den_min: 25
   post_frac_audience_num_min: 25
 
@@ -49,8 +51,11 @@ default:
 
   verbose_scrape: true
   verbose_post: true
+  verbose_regenerate: true
+  # Todo: Break up this into more speicific components?
   verbose_file: false
 
+  # TODO: Make this more specific?
   backup_file: true
 
   token: !expr rtweet::get_token()

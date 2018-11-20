@@ -8,6 +8,17 @@
     "user_sentiment",
     "audience_sentiment"
   )
+
+.COLS_SCREEN_NAME_INFO_ORDER <-
+  c(
+    "screen_name",
+    "followers_count",
+    "statuses_count",
+    "name",
+    "description"
+  )
+
+
 .COLS_SENTIMENT_ORDER <-
   c(
     "sentiment",
@@ -108,6 +119,7 @@
 
 .validate_tl_df <- purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
 .validate_screen_name_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_ORDER)
+.validate_screen_name_info_df <- purrr::partial(.validate_df, cols = .COLS_SCREEN_NAME_INFO_ORDER)
 .validate_sentiment_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
 
 .validate_twitter_onerowpergrp_df <-
@@ -257,9 +269,25 @@ import_ratio_last_post <-
   }
 
 import_screen_name <-
-  purrr::partial(.import_nontwitter_file, path = config$path_screen_name, f_validate = .validate_screen_name_df)
+  purrr::partial(
+    .import_nontwitter_file,
+    path = config$path_screen_name,
+    f_validate = .validate_screen_name_df
+
+    )
+import_screen_name_info <-
+  purrr::partial(
+    .import_nontwitter_file,
+    path = config$path_screen_name_info,
+    f_validate = .validate_screen_name_info_df
+  )
 import_sentiment <-
-  purrr::partial(.import_nontwitter_file, path = config$path_sentiment, f_validate = .validate_sentiment_df)
+  purrr::partial(
+    .import_nontwitter_file,
+    path = config$path_sentiment,
+    f_validate = .validate_sentiment_df
+    )
+
 
 .flatten_screen_name <-
   function(data, ...) {
@@ -386,7 +414,6 @@ export_ratio_last_post <-
     )
   }
 
-
 regenerate_sentiment_file <-
   function(screen_name = NULL,
            sentiment = NULL,
@@ -395,17 +422,22 @@ regenerate_sentiment_file <-
            backup = TRUE,
            na = "",
            append = FALSE,
-           verbose = config$verbose_file) {
+           verbose = config$verbose_regenerate) {
 
     .preprocess_export(path = path, backup = backup)
 
     if(is.null(screen_name)) {
       screen_name <- import_screen_name()
     }
+    # Note: This validation is intended for the case where `screen_name` is not `NULL`.
+    .validate_screen_name_df(screen_name)
 
+    # Note: `sentiment_old` is purely for comparison's sake.
     if(is.null(sentiment)) {
-      .import_sentiment_possibly <- purrr::possibly(import_sentiment, otherwise = NULL)
-      sentiment_old <- .import_sentiment_possibly()
+      # Note: Don't throw an error because the file may not exist
+      # (before the first time it is created).
+      .f <- purrr::possibly(import_sentiment, otherwise = NULL)
+      sentiment_old <- .f()
     }
 
     sentiment_exist <-
@@ -451,6 +483,47 @@ regenerate_sentiment_file <-
 
     write_csv(x = sentiment_new, path = path, na = na, append = append, ...)
     .postprocess_export(data = sentiment_new, path = path, ...)
+  }
+
+# TODO: Make a more general `regenarate*()` function to combine with the above one?
+regenerate_screen_name_info_file <-
+  function(screen_name = NULL,
+           screen_name_info = NULL,
+           ...,
+           path = config$path_scree_name_info,
+           backup = TRUE,
+           na = "",
+           append = FALSE,
+           verbose = config$verbose_regenerate) {
+
+    .preprocess_export(path = path, backup = backup)
+
+    if(is.null(screen_name)) {
+      screen_name <- get_screen_name_toscrape()
+    }
+    # Note: This validation is intended for the case where `screen_name` is not `NULL`.
+    .validate_screen_name_vector(screen_name)
+
+    if(is.null(screen_name_info)) {
+      .f <- purrr::possibly(import_screen_name_info, otherwise = NULL)
+      screen_name_info_old <- .f()
+    }
+
+    screen_name_info_new <-
+      screen_name %>%
+      rtweet::lookup_users() %>%
+
+    if(!is.null(screen_name_info_old)) {
+      .compare_n_row_le(
+        data1 = screen_name_info_old,
+        data2 = screen_name_info_new,
+        message = TRUE,
+        stop = FALSE
+      )
+    }
+
+    write_csv(x = screen_name_info_new, path = path, na = na, append = append, ...)
+    .postprocess_export(data = screen_name_info_new, path = path, ...)
   }
 
 # convert_xxx ----
@@ -525,4 +598,68 @@ regenerate_sentiment_file <-
 #     purrr::walk(screen_name,, ~.f(.x, ...))
 #   }
 
+.COLS_LISTS_MEMBERS_ORDER <-
+  c(
+    "user_id",
+    "name",
+    "screen_name",
+    "location",
+    "description",
+    "url",
+    "protected",
+    "followers_count",
+    "friends_count",
+    "listed_count",
+    "created_at",
+    "favourites_count",
+    "utc_offset",
+    "time_zone",
+    "geo_enabled",
+    "verified",
+    "statuses_count",
+    "lang",
+    "contributors_enabled",
+    "is_translator",
+    "is_translation_enabled",
+    "profile_background_color",
+    "profile_background_image_url",
+    "profile_background_image_url_https",
+    "profile_background_tile",
+    "profile_image_url",
+    "profile_image_url_https",
+    "profile_banner_url",
+    "profile_link_color",
+    "profile_sidebar_border_color",
+    "profile_sidebar_fill_color",
+    "profile_text_color",
+    "profile_use_background_image",
+    "has_extended_profile",
+    "default_profile",
+    "default_profile_image",
+    "following",
+    "follow_request_sent",
+    "notifications",
+    "translator_type"
+  )
+
+.COLS_LOOKUP_USERS_ORDER <-
+  c(
+    "user_id",
+    "name",
+    "screen_name",
+    "location",
+    "description",
+    "url",
+    "protected",
+    "followers_count",
+    "friends_count",
+    "listed_count",
+    "created_at",
+    "favourites_count",
+    "verified",
+    "statuses_count",
+    "lang",
+    "profile_image_url",
+    "profile_banner_url"
+  )
 

@@ -2,9 +2,9 @@ sentiment,mood
 debate,negative
 neutral,neutral
 fun,positive
+informative,
 sarcastic,positive
 positive,positive
-informative,
 unknown,neutral
 mockery,negative
 negative,negative
