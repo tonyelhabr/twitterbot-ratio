@@ -18,19 +18,23 @@ if (!interactive()) {
   invisible(source(".Rprofile"))
 
 } else {
-  message("Not interactive!")
+  message("Running this script in interactive mode! (It is not designed to do so.)")
   args <- character()
 }
 
 # message("args: ", args)
 
 if (length(args) == 0) {
-  args <- "scrape"
-  # args <- "post"
+  # args <- "scrape"
+  args <- "post"
   # args <- "default"
 } else {
   if (!(any(c("post", "scrape") %in% args))) {
-    message(sprintf('You must specify either "scrape" or "post" (not "%s"). Defaulting to "default".', args))
+    message(
+      sprintf(
+        'You must specify either "scrape" or "post" (not "%s"). Defaulting to "default".',
+        args)
+    )
     args <- "default"
   }
 }
@@ -44,7 +48,11 @@ f <-
     scrape = do_scrape_ratio_all,
     default = function(x) {
       if (interactive()) {
-        return(message("You're in interactive mode. This script is not intended to be run like this"))
+        return(
+          message(
+            "You're in interactive mode. This script is not intended to be run like this"
+          )
+        )
       } else {
         return(message("Doing nothing..."))
       }

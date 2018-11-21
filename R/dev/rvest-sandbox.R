@@ -1,14 +1,18 @@
 
-
-
-user <- "Foxworth24"
-status_id <- "1063469402870419456"
+# user <- "mcten"
+# status_id <- "1065253675025788928"
+# user <- "WindhorstESPN"
+# status_id <- "1064950276233273344"
+user <- "Chris_Broussard"
+status_id <- "1065278661492801536"
 url <- sprintf("https://twitter.com/%s/status/%s", user, status_id)
+url
 selector <- sprintf("#profile-tweet-action-reply-count-aria-%s", status_id)
+selector
 reply_count <-
   url %>%
   xml2::read_html() %>%
-  rvest::html_nodes(selector) %>%
+  rvest::html_nodes(css = selector) %>%
   rvest::html_text() %>%
   str_replace_all("[^[0-9]]", "") %>%
   as.integer()

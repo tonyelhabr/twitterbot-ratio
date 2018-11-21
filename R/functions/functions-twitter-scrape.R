@@ -1,12 +1,13 @@
 
 .do_scrape_ratio <-
-  function(user1,
+  function(user,
            tl = NULL,
            since_id = NULL,
            ratio_log_scrape = NULL,
            ratio_last_scrape = NULL,
            ...,
            cache = config$tl_cache,
+           sentinel = config$scrape_reply_sentinel,
            verbose = config$verbose_scrape) {
 
     # .user = "RealSkipBayless"
@@ -19,7 +20,7 @@
 
     # message(rep("-", getOption("width")))
     # message(rep("-", 80L))
-    .validate_user_1(user1)
+    .validate_user_scalar(user)
 
     if (is.null(ratio_log_scrape)) {
       ratio_log_scrape <- .import_ratio_log_scrape_possibly()
@@ -61,25 +62,25 @@
       if (is.null(since_id)) {
         ratio_last_scrape_filt <-
           ratio_last_scrape %>%
-          .filter_byuser(.user = user1)
+          .filter_byuser(.user = user)
         if(nrow(ratio_last_scrape_filt) > 0L) {
           since_id <-
             ratio_last_scrape_filt %>%
             pull(status_id)
-          tl <- .get_tl_since_possibly(.user = user1, .since_id = since_id)
+          tl <- .get_tl_since_possibly(.user = user, .since_id = since_id)
         } else {
-          tl <- .get_tl_first_possibly(.user = user1)
+          tl <- .get_tl_first_possibly(.user = user)
         }
       }
 
       if(is.null(tl)) {
-        msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", user1)
+        msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", user)
         message(msg)
         return(NULL)
       }
 
       if(nrow(tl) == 0L) {
-        msg <- sprintf("Did not find any tweets for \"%s\".", user1)
+        msg <- sprintf("Did not find any tweets for \"%s\".", user)
         message(msg)
         return(NULL)
       }
@@ -94,16 +95,16 @@
     n_row_tl_filt <- nrow(tl_filt)
     if (verbose) {
       if(n_row_tl_filt == 0L) {
-        msg <- sprintf("No tweets to evaluate for \"%s\".", user1)
+        msg <- sprintf("No tweets to evaluate for \"%s\".", user)
         message(msg)
         return(NULL)
       }
-      msg <- sprintf("Evaluating %d tweet(s) for \"%s\".", n_row_tl_filt, user1)
+      msg <- sprintf("Evaluating %d tweet(s) for \"%s\".", n_row_tl_filt, user)
       message(msg)
     }
 
     if(cache) {
-      path_tl_cache <- .export_tl_cache(tl_filt, user1)
+      path_tl_cache <- .export_tl_cache(tl_filt, user)
     }
 
     # ..f <- function(user, status_id) {
@@ -111,18 +112,43 @@
     #   message(status_id)
     #   return(-1L)
     # }
-    browser()
     reply <-
       tl_filt %>%
       mutate(
         reply_count =
           purrr::pmap_int(
             list(user, status_id),
-            # Note: May be getting an HTTP 503 error...
             ~.get_reply_count_hack_possibly(user = ..1, status_id = ..2)
             # ~..f(user = ..1, status_id = ..2)
             )
       )
+
+    reply_sentinel <-
+      reply %>%
+      filter(reply_count == sentinel)
+
+    n_row_sentinel <- nrow(reply_sentinel)
+    n_row_reply <-  nrow(reply)
+    if(n_row_sentinel > 0L) {
+      if(verbose) {
+        msg <-
+          sprintf(
+            paste0(
+              "There was an error in retrieving `reply_count` for %s tweets (out of %d)."
+            ),
+            n_row_sentinel,
+            n_row_reply
+          )
+        message(msg)
+      }
+      if(n_row_sentinel == n_row_reply) {
+        return(NULL)
+      } else {
+        reply <-
+          reply %>%
+          filter(reply_count != sentinel)
+      }
+    }
 
     ratio_log_scrape_export <-
       reply %>%
@@ -145,33 +171,4 @@
     invisible(reply)
   }
 
-do_scrape_ratio_all_OLD <-
-  function(user = NULL,
-           ...,
-           path = config$path_ratio_log_scrape,
-           backup = TRUE,
-           clean = TRUE,
-           progress = TRUE) {
-    if (is.null(user)) {
-      user <- get_user_toscrape()
-      user <- user[6:10]
-    }
-    .validate_user_vector(user)
-    if (backup) {
-      .create_backup(path = path, clean = clean)
-    }
-    if (progress) {
-      pb <- .create_pb(total = length(user))
-    } else {
-      pb <- NULL
-    }
-    .f <- function(.user, .pb = NULL) {
-      .do_scrape_ratio(user1 = .user)
-      if (!is.null(.pb)) {
-        .pb$tick()
-      }
-    }
-    purrr::walk(user, ~ .f(.user = .x, .pb = pb))
-
-  }
 

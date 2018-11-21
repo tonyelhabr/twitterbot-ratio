@@ -33,6 +33,14 @@
     strftime(x, "%I:%M %p, %m/%d/%Y")
   }
 
+.get_timestamp_post_pretty <-
+  function(data, ...) {
+    # .validate_onerow_df(data)
+    data %>%
+      pull(timestamp_post) %>%
+      .prettify_timestamp_post()
+  }
+
 .slice_ratio_f <-
   function(data, f, ..., na.rm = TRUE) {
     res <-
@@ -245,8 +253,9 @@
            ratio_log_scrape,
            ratio_last_post,
            ...,
-           ratio_lo = config$post_ratio_lo,
-           reply = config$post_reply) {
+           ratio_min = config$post_ratio_min,
+           reply = config$post_reply,
+           verbose = config$verbose_post) {
 
     text_post <-
       sprintf(
@@ -274,31 +283,28 @@
           chr_emoji
         )
     } else {
-
       if(!is.null(ratio_last_post)) {
-        # Note: This data set should only have one record per screen name,
-        # so there should not be any need to `slice()`.
-        ratio_pastposted_last <-
+        # Note: Should probably use `ratio_pastposted` first instead of doing this.
+        ratio_pastposted_past1 <-
           ratio_last_post %>%
           .slice_ratio_log_pastposted(
             .user = user,
             .status_id = status_id
           )
       } else {
-        # Note: Doing this in case `ratio_last_post` is not provided.
-        ratio_pastposted_last <-
+        ratio_pastposted_past1 <-
           ratio_pastposted %>%
           arrange(desc(timestamp_post)) %>%
           slice(1)
 
       }
-      .validate_onerow_df(ratio_pastposted_last)
+      .validate_onerow_df(ratio_pastposted_past1)
 
       ratio_pastposted_hi <- .slice_ratio_hi(ratio_pastposted)
       ratio_hi <- ratio_pastposted_hi %>% pull(ratio)
       ratio_pastposted_lo <- .slice_ratio_lo(ratio_pastposted)
       ratio_lo <- ratio_pastposted_hi %>% pull(ratio)
-      ratio_past1 <- ratio_pastposted_last %>% pull(ratio)
+      ratio_past1 <- ratio_pastposted_past1 %>% pull(ratio)
 
       chr_emoji_lo <- .get_chr_emoji_thumbsup()
       chr_emoji_hi <- .get_chr_emoji_fire()
@@ -306,24 +312,25 @@
       if((ratio < ratio_lo) | (ratio > ratio_hi)) {
         if (ratio < ratio_lo) {
           term <- "LOW"
-          ratio_postposted_minmax <- ratio_pastposted_lo
-          ratio_lomax <- ratio_lo
+          ratio_pastposted_lohi <- ratio_pastposted_lo
+          ratio_lohi <- ratio_lo
           chr_emoji <- chr_emoji_lo
         } else if (ratio > ratio_hi) {
           term <- "HIGH"
-          ratio_postposted_minmax <- ratio_pastposted_hi
-          ratio_lomax <- ratio_hi
+          ratio_pastposted_lohi <- ratio_pastposted_hi
+          ratio_lohi <- ratio_hi
           chr_emoji <- chr_emoji_hi
         }
-        timestamp_post_minmax <- ratio_pastposted_lomax %>% pull(timestamp_post)
-        timestamp_post_minmax <- .prettify_timestamp_post(timestamp_post)
+        timestamp_post <-
+          ratio_pastposted_lohi %>%
+          .get_timestamp_post_pretty()
         text_post <-
           sprintf(
             "%s This ratio breaks your previous all-time %s (%.02f at %s)! %s",
             text_post,
             term,
-            ratio_lomax,
-            timestamp_post_minmax,
+            ratio_lohi,
+            timestamp_post,
             chr_emoji
           )
       } else {
@@ -334,8 +341,9 @@
           term <- "HIGHER"
           chr_emoji <- chr_emoji_hi
         }
-        timestamp_post_past1 <- ratio_pastposted_last %>% pull(timestamp_post)
-        timestamp_post_past1 <- .prettify_timestamp_post(timestamp_post_past1)
+        timestamp_post_past1 <-
+          ratio_pastposted_past1 %>%
+          .get_timestamp_post_pretty()
         text_post <-
           sprintf(
             "%s This ratio is %s than the one (%.03f) I tweeted about last (at %s)! %s",
@@ -346,10 +354,36 @@
             chr_emoji
           )
       }
-    }
 
-    if(ratio < ratio_lo) {
-
+      # Note: Overwrite anything from before if this is true.
+      # TODO: Think about this!
+      # (Could just move this up before the prior logic, but not sure if I want
+      # to actually use this going forward.)
+      if(ratio < ratio_min) {
+        if(verbose) {
+          sprintf(
+            paste0(
+              "Over-ruling in-development `text_post` with new one ",
+              "(because `ratio` < `ratio_min`). (Before, it was \n\"%s\")"
+            ),
+            text_post
+          )
+        }
+        if(!exists("timestamp_post_past1")) {
+          timestamp_post_past1 <-
+            ratio_pastposted_past1 %>%
+            .get_timestamp_post_pretty()
+        }
+        text_post <-
+          sprintf(
+            paste0(
+              "You've been doing a good job with keeping your ratio low since ",
+              "the last time I tweeted about you (at %s). Keep it up! %s"
+            ),
+            timestamp_post_past1,
+            .get_chr_emoji_smile()
+          )
+      }
     }
 
     if(reply) {
@@ -362,6 +396,9 @@
             .status_id = status_id
           )
         )
+    }
+    if(nchar(text_post) > 280) {
+      stop("`text_post` cannot exceed 280 characters.", call. = FALSE)
     }
     text_post
   }

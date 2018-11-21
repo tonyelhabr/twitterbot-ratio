@@ -12,7 +12,13 @@
            progress = TRUE) {
     if (is.null(user)) {
       user <- get_user_toscrape()
-      user <- user[1:2]
+      if(interactive()) {
+        # user <- user[1:50]
+        # user <- sample(user, size = 5)
+        # user <- "bykevinclark"
+        # msg <- "Filtering to a small subset of users. Remove this action!"
+        message(msg)
+      }
     }
     .validate_user_vector(user)
     if (backup & !is.null(path)) {
@@ -25,9 +31,11 @@
     }
     .f <- function(.user, .pb = NULL) {
       f_do(user = .user)
+      # browser()
       if (!is.null(.pb)) {
         .pb$tick()
       }
+      # browser()
     }
     purrr::walk(user, ~ .f(.user = .x, .pb = pb))
   }

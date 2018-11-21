@@ -132,7 +132,7 @@
     stopifnot(is.character(x))
   }
 
-.validate_user_1 <-
+.validate_user_scalar <-
   function(x, ...) {
     stopifnot(is.character(x), length(x) == 1L)
   }

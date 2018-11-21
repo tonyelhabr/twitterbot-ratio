@@ -1,4 +1,57 @@
 
+
+..get_tl_df_default <-
+  function(...) {
+    tibble(
+      user_id = character(),
+      user = character(),
+      created_at = lubridate::as_datetime(character()),
+      status_id = character(),
+      favorite_count = integer(),
+      retweet_count = integer(),
+      text = character()
+    ) %>%
+      .reorder_tl_cols_at()
+  }
+
+..ratio_scrape_df_default <-
+  function(...) {
+    bind_cols(
+      ..get_tl_df_default(),
+      tibble(
+        reply_count = double(),
+        ratio = double(),
+        timestamp_scrape = lubridate::as_datetime(character())
+      )
+    ) %>%
+      .reorder_ratio_cols_at()
+  }
+
+
+.validate_ratio_last_df <-
+  function(ratio_last, user, ...) {
+    n_status_id <-
+      ratio_last %>%
+      count(status_id) %>%
+      filter(n > 1L)
+    if(ifelse(nrow(n_status_id) > 0L, TRUE, FALSE)) {
+      msg <- sprintf("Expected 1 `status_id`. Instead, found %s statuses for `%s`.", n_status_id, !!user)
+      stop(msg, call. = FALSE)
+    }
+  }
+
+.unconvert_id_cols_at <-
+  function(data, cols = str_subset(names(data), "user_id|status_id"), ...) {
+    data %>%
+      mutate_at(vars(one_of(cols)), funs(as.character))
+  }
+
+.unconvert_datetime_cols <-
+  function(data, cols = str_subset(names(data), "^created_at$|^timestamp"), ...) {
+    data %>%
+      mutate_at(vars(one_of(cols)), funs(as.character))
+  }
+
 # TODO: Programmatically figure out .N_USER?
 # .N_USER <- 3L
 # .N_USER <- ifelse(file.exists(config$path_ratio_last_scrape), import_ratio_last_scrape() %>% nrow(), 3L)
@@ -124,3 +177,51 @@ count_replies <-
           purrr::map_int(status_id, ~ .get_reply_count(data = reply_data, status_id = .x))
       )
   }
+
+do_scrape_ratio_all <-
+  function(user = NULL,
+           ...,
+           path = config$path_ratio_log_scrape,
+           backup = TRUE,
+           clean = TRUE,
+           progress = TRUE) {
+    if (is.null(user)) {
+      user <- get_user_toscrape()
+      user <- user[6:10]
+    }
+    .validate_user_vector(user)
+    if (backup) {
+      .create_backup(path = path, clean = clean)
+    }
+    if (progress) {
+      pb <- .create_pb(total = length(user))
+    } else {
+      pb <- NULL
+    }
+    .f <- function(.user, .pb = NULL) {
+      .do_scrape_ratio(user = .user)
+      if (!is.null(.pb)) {
+        .pb$tick()
+      }
+    }
+    purrr::walk(user, ~ .f(.user = .x, .pb = pb))
+
+  }
+do_post_ratio_all <-
+  function(user = NULL, ..., backup = TRUE, progress = config$progress_post) {
+    if(is.null(user)) {
+      user <- get_user_topost()
+      # user <- user[1:5]
+    }
+    .validate_user_vector(user)
+    if(backup) {
+      .create_backup(path = config$path_ratio_log_scrape)
+    }
+    .f <- function(.user, .pb) {
+      .do_post_ratio(user = .user)
+      .pb$tick()
+    }
+    pb <- progress::progress_bar$new(total = length(user))
+    purrr::walk(user, ~.f(.user = .x, .pb = pb))
+  }
+

@@ -29,12 +29,13 @@ default:
   # post_ratio_num_min: 10 # reply
   post_ratio_den_min_frac: 0.0001
   # post_ratio_num_min_frac: 0.0001
-  post_ratio_min: 0.5
+  post_ratio_min: 0.25
 
   # Note: `post` prevents the `.create_post()` function from being called.
   # Note: It is recommended to set this to true and leave the other `post_*` parameters
   # as they would otherwise be defined.
-  post: true
+  # post: true
+  post: false
 
   # Note: `post_status_id_sentinel` allows for the `.create_post()` function to be called, and is used
   # in the case that the `post_reply`, `post_retweet`, and `post_favorite` are all

@@ -6,7 +6,7 @@
            ratio_log_scrape = NULL,
            ratio_last_post = NULL,
            ...,
-           delay = config$post,
+           post = config$post,
            sentinel = config$post_status_id_sentinel,
            verbose = config$verbose_post) {
 
@@ -18,7 +18,8 @@
     # TODO (Long-term): Write a function to do the same pre-processing for the
     # `do_scrape/ratio_post()` functions.
     # message(rep("-", 80L))
-    .validate_user_1(user)
+    # message(user)
+    .validate_user_scalar(user)
 
     if (is.null(ratio_log_scrape)) {
       # Note: Don't throw an informative error message here. It's highly unlikely it would ever be encountered.
@@ -80,7 +81,7 @@
       data2 = bind_rows(ratio_topost_raw, ratio_notposted_raw)
     )
 
-
+    # browser()
     ratio_topost <-
       ratio_topost_raw %>%
       mutate(
@@ -97,20 +98,20 @@
           )
       )
 
-    if(delay) {
+    if(post) {
       text_post <- pull(ratio_topost, text_post)
       msg <-
         sprintf(
           paste0(
-            "The message that would have been posted (if `delay` were set to `TRUE`) is:\n",
-            "%s"
+            "The message that would have been posted (if `post` were set to `TRUE`) is:\n",
+            "\"%s\""
           ),
           text_post
         )
       message(msg)
+
       # Note: Instead of returning, try out the rest of the code.
-      # return(ratio_topost)
-      ratio_wasposted_raw <- mutate(ratio_topost, status_id_post = sentinel)
+      ratio_wasposted_raw <- ratio_topost %>%  mutate(status_id_post = sentinel)
 
     } else {
 
@@ -165,7 +166,7 @@
 
     if(!was_posted) {
       # Note: This is "too" verbose (since another message
-      # is most likely sent before with the usage of `delay`).
+      # is most likely sent before with the usage of `post`).
       # if(verbose) {
       #   msg <-
       #     sprintf(
@@ -178,6 +179,7 @@
       #   message(msg)
       # }
       ratio_log_scrape_export <- ratio_log_scrape
+      return(NULL)
     }
 
     path_ratio_log_scrape <- export_ratio_log_scrape_post(ratio_log_scrape_export)
@@ -185,24 +187,6 @@
     ratio_last_post_export <- .convert_ratio_log_scrape_to_last_post(ratio_log_scrape_export)
     path_ratio_last_post <- export_ratio_last_post(ratio_last_post_export)
 
-    invisible(path_ratio_last_post)
+    invisible(path_ratio_log_scrape)
   }
-
-# do_post_ratio_all <-
-#   function(user = NULL, ..., backup = TRUE, progress = config$progress_post) {
-#     if(is.null(user)) {
-#       user <- get_user_topost()
-#       # user <- user[1:5]
-#     }
-#     .validate_user_vector(user)
-#     if(backup) {
-#       .create_backup(path = config$path_ratio_log_scrape)
-#     }
-#     .f <- function(.user, .pb) {
-#       .do_post_ratio(user = .user)
-#       .pb$tick()
-#     }
-#     pb <- progress::progress_bar$new(total = length(user))
-#     purrr::walk(user, ~.f(.user = .x, .pb = pb))
-#   }
 

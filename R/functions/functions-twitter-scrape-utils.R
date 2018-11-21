@@ -78,14 +78,31 @@
   }
 
 .get_tl_first <-
-  function(.user, ..., n = config$n_tl_new, token = .TOKEN, verbose = config$verbose_scrape) {
-    if(verbose) {
-      msg <- sprintf("\nGetting last %d tweets from timeline for \"%s\".", n, .user)
+  function(.user,
+           ...,
+           n = config$n_tl_new,
+           token = .TOKEN,
+           # token = rtweet::get_token(),
+           verbose = config$verbose_scrape) {
+    if (verbose) {
+      msg <-
+        sprintf(
+          paste0(
+            "\nGetting last %d tweets from timeline for \"%s\"."
+          ),
+          n,
+          .user
+        )
       message(msg)
     }
 
     suppressMessages(
-      rtweet::get_timeline(user = .user, n = n, token = token, ...) %>%
+      rtweet::get_timeline(
+        user = .user,
+        n = n,
+        token = token,
+        ...
+      ) %>%
         .rename_tl() %>%
         .filter_tweet_type()
     )
@@ -99,15 +116,30 @@
 
 .get_tl_self_possibly <- purrr::possibly(.get_tl_self, otherwise = NULL)
 
+
 .get_tl_since <-
-  function(.user, .since_id, ..., token = .TOKEN, verbose = config$verbose_scrape) {
-    if(verbose) {
-      msg <- sprintf("\nGetting timeline for \"%s\" since last evaluated tweet: %s", .user, .since_id)
+  function(.user,
+           .since_id,
+           ...,
+           token = .TOKEN,
+           # token = rtweet::get_token(),
+           verbose = config$verbose_scrape) {
+    if (verbose) {
+      msg <- sprintf(
+        paste0("\nGetting timeline for \"%s\" since last evaluated tweet: %s"),
+        .user,
+        .since_id
+      )
       message(msg)
     }
 
     suppressMessages(
-      rtweet::get_timeline(user = .user, since_id = .since_id, token = token, ...) %>%
+      rtweet::get_timeline(
+        user = .user,
+        since_id = .since_id,
+        token = token,
+        ...
+      ) %>%
         .rename_tl() %>%
         .filter_tweet_type()
     )
