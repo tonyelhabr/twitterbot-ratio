@@ -1,32 +1,27 @@
 
+
 # Reference: sports-predict project (functions-scrape) for `reorder*()` and `select*()` functions below.
 .COLS_USER_ORDER <-
-  c(
-    "user",
+  c("user",
     "category1",
     "category2",
     "user_tone",
     "audience_tone",
     "scrape",
-    "post"
-  )
+    "post")
 
 .COLS_USER_INFO_ORDER <-
-  c(
-    "user",
+  c("user",
     "followers_count",
     "statuses_count",
     "name",
     "description",
-    "list"
-  )
+    "list")
 
 
 .COLS_SENTIMENT_ORDER <-
-  c(
-    "tone",
-    "mood"
-  )
+  c("tone",
+    "mood")
 
 .COLS_TL_ORDER <-
   c(
@@ -40,26 +35,20 @@
   )
 
 .COLS_RATIO_BASE_ORDER <-
-  c(
-    .COLS_TL_ORDER,
+  c(.COLS_TL_ORDER,
     "reply_count",
     "ratio",
-    "timestamp_scrape"
-  )
+    "timestamp_scrape")
 .COLS_RATIO_SCORE_ORDER <-
-  c(
-    # "qualified",
+  c(# "qualified",
     "considered",
     "posted",
     "status_id_post",
     "text_post",
-    "timestamp_post"
-  )
+    "timestamp_post")
 .COLS_RATIO_ORDER <-
-  c(
-    .COLS_RATIO_BASE_ORDER,
-    .COLS_RATIO_SCORE_ORDER
-  )
+  c(.COLS_RATIO_BASE_ORDER,
+    .COLS_RATIO_SCORE_ORDER)
 
 # validate_xxx_df ----
 .validate_df <-
@@ -69,7 +58,8 @@
     stopifnot(all(cols %in% names(data)))
   }
 
-.validate_ratio_df <- purrr::partial(.validate_df, cols = .COLS_RATIO_ORDER)
+.validate_ratio_df <-
+  purrr::partial(.validate_df, cols = .COLS_RATIO_ORDER)
 # Note: This function can be replaced with the simplified version above
 # once all other functions are "stable"/"finalized". Until then, this is useful
 # for checking the integrity of the data.
@@ -82,49 +72,40 @@
     .validate_df(data = data, cols = cols)
 
     data_filt <- data %>% filter(!considered %in% c(0L, 1L))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    stopifnot(nrow(data_filt) == 0L)
 
     data_filt <- data %>% filter(!posted %in% c(0L, 1L))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    stopifnot(nrow(data_filt) == 0L)
 
     # Note: Can remove this check if this field is ever populated in the future.
     # (Currently, it is not used.)
     data_filt <- data %>% filter(status_id_post != "")
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    stopifnot(nrow(data_filt) == 0L)
 
-    data_filt <- data %>% filter((posted == 1L) & (considered == 0L))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    data_filt <-
+      data %>% filter((posted == 1L) & (considered == 0L))
+    stopifnot(nrow(data_filt) == 0L)
 
-    data_filt <- data %>% filter(considered == 1L & is.na(timestamp_post))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    data_filt <-
+      data %>% filter(considered == 1L & is.na(timestamp_post))
+    stopifnot(nrow(data_filt) == 0L)
 
     data_filt <- data %>% filter((posted == 1L) & (text_post == ""))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    stopifnot(nrow(data_filt) == 0L)
 
     data_filt <- data %>% filter((posted == 0L) & (text_post != ""))
-    stopifnot(
-      nrow(data_filt) == 0L
-    )
+    stopifnot(nrow(data_filt) == 0L)
 
   }
 
-
-.validate_tl_df <- purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
-.validate_user_df <- purrr::partial(.validate_df, cols = .COLS_USER_ORDER)
-.validate_user_info_df <- purrr::partial(.validate_df, cols = .COLS_USER_INFO_ORDER)
-.validate_tone_df <- purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
+.validate_tl_df <-
+  purrr::partial(.validate_df, cols = .COLS_TL_ORDER)
+.validate_user_df <-
+  purrr::partial(.validate_df, cols = .COLS_USER_ORDER)
+.validate_user_info_df <-
+  purrr::partial(.validate_df, cols = .COLS_USER_INFO_ORDER)
+.validate_tone_df <-
+  purrr::partial(.validate_df, cols = .COLS_SENTIMENT_ORDER)
 
 .validate_twitter_onerowpergrp_df <-
   function(data, col, ...) {
@@ -186,13 +167,17 @@
 
 # reconvert_xxx_cols_at_at ----
 .reconvert_datetime_cols_at <-
-  function(data, cols = str_subset(names(data), "^created_at$|^timestamp"), ...) {
+  function(data,
+           cols = str_subset(names(data), "^created_at$|^timestamp"),
+           ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(lubridate::ymd_hms))
   }
 
 .reconvert_integer_cols_at <-
-  function(data, cols = str_subset(names(data), "count|^considered$|^posted$"), ...) {
+  function(data,
+           cols = str_subset(names(data), "count|^considered$|^posted$"),
+           ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.integer)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., 0L)))
@@ -206,7 +191,9 @@
   }
 
 .reconvert_chr_cols_at <-
-  function(data, cols = str_subset(names(data), "_id|^text_|user"), ...) {
+  function(data,
+           cols = str_subset(names(data), "_id|^text_|user"),
+           ...) {
     data %>%
       mutate_at(vars(one_of(cols)), funs(as.character)) %>%
       mutate_at(vars(one_of(cols)), funs(coalesce(., "")))
@@ -231,10 +218,16 @@
   }
 
 .import_twitter_file <-
-  function(..., path, verbose = config$verbose_file) {
+  function(...,
+           path,
+           f_validate = NULL,
+           verbose = config$verbose_file) {
     .preprocess_import(path = path)
     # data <- data %>% rtweet:::unprepend_ids()
     data <- rtweet::read_twitter_csv(path)
+    if (!is.null(f_validate)) {
+      f_validate(data)
+    }
     data <-
       data %>%
       .reconvert_datetime_cols_at() %>%
@@ -247,11 +240,19 @@
 .import_ratio_file <- .import_twitter_file
 
 import_ratio_last_scrape <-
-  purrr::partial(.import_ratio_file, path = config$path_ratio_last_scrape)
+  purrr::partial(
+    .import_ratio_file,
+    path = config$path_ratio_last_scrape,
+    f_validate = .validate_ratio_df
+  )
 import_ratio_log_scrape <-
-  purrr::partial(.import_ratio_file, path = config$path_ratio_log_scrape)
+  purrr::partial(.import_ratio_file,
+                 path = config$path_ratio_log_scrape,
+                 f_validate = .validate_ratio_df)
 import_ratio_last_post <-
-  purrr::partial(.import_ratio_file, path = config$path_ratio_last_post)
+  purrr::partial(.import_ratio_file,
+                 path = config$path_ratio_last_post,
+                 f_validate = .validate_ratio_df)
 
 .import_ratio_last_scrape_possibly <-
   purrr::possibly(import_ratio_last_scrape, otherwise = NULL)
@@ -262,80 +263,81 @@ import_ratio_last_post <-
 
 
 .import_nontwitter_file <-
-  function(..., path, f_validate = NULL, verbose = config$verbose_file) {
+  function(...,
+           path,
+           f_validate = NULL,
+           verbose = config$verbose_file) {
     .preprocess_import(path = path, ...)
     data <- readr::read_csv(path)
-    if(!is.null(f_validate)) {
+    if (!is.null(f_validate)) {
       f_validate(data)
     }
-    # data <- .flatten_user(data)
     .postprocess_import(data = data, path = path, ...)
   }
 
 import_user <-
-  purrr::partial(
-    .import_nontwitter_file,
-    path = config$path_user,
-    f_validate = .validate_user_df
-
-    )
+  purrr::partial(.import_nontwitter_file,
+                 path = config$path_user,
+                 f_validate = .validate_user_df)
 import_user_info <-
-  purrr::partial(
-    .import_nontwitter_file,
-    path = config$path_user_info,
-    f_validate = .validate_user_info_df
-  )
+  purrr::partial(.import_nontwitter_file,
+                 path = config$path_user_info,
+                 f_validate = .validate_user_info_df)
 import_tone <-
-  purrr::partial(
-    .import_nontwitter_file,
-    path = config$path_tone,
-    f_validate = .validate_tone_df
-    )
-
+  purrr::partial(.import_nontwitter_file,
+                 path = config$path_tone,
+                 f_validate = .validate_tone_df)
 
 .flatten_user <-
   function(data, ...) {
-    pull(data, user)
+    data %>% pull(user)
   }
 
 # Note: This function requires that both data sets be non-`NULL`.
 .join_user_and_tone <-
   function(user, tone, ...) {
-    suppressMessages(
-      user %>%
-        left_join(tone %>% rename_all(funs(paste0("user_", .)))) %>%
-        left_join(tone %>% rename_all(funs(paste0("audience_", .))))
-    )
+    suppressMessages(user %>%
+                       left_join(tone %>% rename_all(funs(
+                         paste0("user_", .)
+                       ))) %>%
+                       left_join(tone %>% rename_all(funs(
+                         paste0("audience_", .)
+                       ))))
   }
 
-.filter_user <-
+.filter_user_scrape <-
   function(data, tone = NULL, ...) {
     stopifnot(is.data.frame(data))
-    if(is.null(tone)) {
-      tone <- import_tone()
-    }
+    # TODO: Do something with this?
+    # if(is.null(tone)) {
+    #   tone <- import_tone()
+    # }
+    data %>% filter(scrape == 1L)
+  }
 
-    res <-
-      data %>%
-      filter(scrape == 1L)
-    res
+.filter_user_post <-
+  function(data, ...) {
+    data %>% filter(post == 1L)
   }
 
 get_user_toscrape <-
   function(...) {
     data <- import_user()
     data %>%
-      .filter_user() %>%
+      .filter_user_scrape() %>%
       .flatten_user()
   }
 
 get_user_topost <-
   function(...) {
     ratio_log_scrape <- import_ratio_log_scrape()
+    user <- import_user()
     data <-
-      ratio_log_scrape %>%
+      user %>%
+      inner_join(ratio_log_scrape, by = "user") %>%
       distinct(user)
     data %>%
+      .filter_user_post() %>%
       .flatten_user()
   }
 
@@ -358,7 +360,13 @@ get_user_topost <-
   }
 
 .export_twitter_file <-
-  function(data, ..., path, append, na = "", backup = config$backup_file, verbose = config$verbose_file) {
+  function(data,
+           ...,
+           path,
+           append,
+           na = "",
+           backup = config$backup_file,
+           verbose = config$verbose_file) {
     .preprocess_export(path = path, backup = backup, ...)
     # Note: Can't use rtweet::write_csv() because it doesn't have `append`.
     # data <- data %>% rtweet:::flatten() %>% rtweet:::prepend_ids()
@@ -401,12 +409,12 @@ export_ratio_last_post <-
            user,
            ...,
            append = FALSE,
-             backup = TRUE,
-             path = config$path_tl_cache,
-             file = tools::file_path_sans_ext(path),
-             ext = tools::file_ext(path),
-             suffix = user,
-             path_cache = sprintf("%s-%s.%s", file, suffix, ext)) {
+           backup = TRUE,
+           path = config$path_tl_cache,
+           file = tools::file_path_sans_ext(path),
+           ext = tools::file_ext(path),
+           suffix = user,
+           path_cache = sprintf("%s-%s.%s", file, suffix, ext)) {
     .export_twitter_file(
       data = data,
       path = path_cache,
@@ -425,17 +433,16 @@ regenerate_tone <-
            na = "",
            append = FALSE,
            verbose = config$verbose_regenerate) {
-
     .preprocess_export(path = path, backup = backup)
 
-    if(is.null(user)) {
+    if (is.null(user)) {
       user <- import_user()
     }
     # Note: This validation is intended for the case where `user` is not `NULL`.
     .validate_user_df(user)
 
     # Note: `tone_old` is purely for comparison's sake.
-    if(is.null(tone)) {
+    if (is.null(tone)) {
       # Note: Don't throw an error because the file may not exist
       # (before the first time it is created).
       .f <- purrr::possibly(import_tone, otherwise = NULL)
@@ -448,24 +455,32 @@ regenerate_tone <-
       mutate_at(vars(actor), funs(str_remove_all(., "_tone$"))) %>%
       distinct(tone)
 
-    suppressMessages(
-      tone_new <-
-        tone_exist %>%
-        left_join(
-          tribble(
-            ~tone, ~mood,
-            "debate", "negative",
-            "fun", "positive",
-            "mockery", "negative",
-            "negative", "negative",
-            "neutral", "neutral",
-            "sarcastic", "positive",
-            "supportive", "positive",
-            "positive", "positive",
-            "unknown", "neutral"
-          )
-        )
-    )
+    suppressMessages(tone_new <-
+                       tone_exist %>%
+                       left_join(
+                         tribble(
+                           ~ tone,
+                           ~ mood,
+                           "debate",
+                           "negative",
+                           "fun",
+                           "positive",
+                           "mockery",
+                           "negative",
+                           "negative",
+                           "negative",
+                           "neutral",
+                           "neutral",
+                           "sarcastic",
+                           "positive",
+                           "supportive",
+                           "positive",
+                           "positive",
+                           "positive",
+                           "unknown",
+                           "neutral"
+                         )
+                       ))
 
     .compare_n_row_le(
       data1 = tone_exist,
@@ -474,7 +489,7 @@ regenerate_tone <-
       stop = FALSE
     )
 
-    if(!is.null(tone_old)) {
+    if (!is.null(tone_old)) {
       .compare_n_row_le(
         data1 = tone_old,
         data2 = tone_new,
@@ -483,7 +498,13 @@ regenerate_tone <-
       )
     }
 
-    write_csv(x = tone_new, path = path, na = na, append = append, ...)
+    write_csv(
+      x = tone_new,
+      path = path,
+      na = na,
+      append = append,
+      ...
+    )
     .postprocess_export(data = tone_new, path = path, ...)
   }
 
@@ -497,16 +518,15 @@ regenerate_user_info <-
            na = "",
            append = FALSE,
            verbose = config$verbose_regenerate) {
-
     .preprocess_export(path = path, backup = backup)
 
-    if(is.null(user)) {
+    if (is.null(user)) {
       user <- get_user_toscrape()
     }
     # Note: This validation is intended for the case where `user` is not `NULL`.
     .validate_user_vector(user)
 
-    if(is.null(user_info)) {
+    if (is.null(user_info)) {
       .f <- purrr::possibly(import_user_info, otherwise = NULL)
       user_info_old <- .f()
     }
@@ -517,7 +537,7 @@ regenerate_user_info <-
       mutate(list = "") %>%
       select(one_of(.COLS_USER_INFO_ORDER))
 
-    if(!is.null(user_info_old)) {
+    if (!is.null(user_info_old)) {
       .compare_n_row_le(
         data1 = user_info_old,
         data2 = user_info_new,
@@ -526,7 +546,13 @@ regenerate_user_info <-
       )
     }
 
-    write_csv(x = user_info_new, path = path, na = na, append = append, ...)
+    write_csv(
+      x = user_info_new,
+      path = path,
+      na = na,
+      append = append,
+      ...
+    )
     .postprocess_export(data = user_info_new, path = path, ...)
   }
 
@@ -539,16 +565,12 @@ regenerate_user_info <-
            col_filt = "ratio",
            ...,
            verbose = config$verbose_file) {
-    stopifnot(
-      is.character(col_grp),
-      is.character(col_sort),
-      is.character(col_filt)
-    )
-    stopifnot(
-      any(col_grp == names(data)),
-      any(col_sort == names(data)),
-      any(col_filt == names(data))
-    )
+    stopifnot(is.character(col_grp),
+              is.character(col_sort),
+              is.character(col_filt))
+    stopifnot(any(col_grp == names(data)),
+              any(col_sort == names(data)),
+              any(col_filt == names(data)))
     col_grp_sym <- sym(col_grp)
     col_sort_sym <- sym(col_sort)
     col_filt_sym <- sym(col_filt)
@@ -557,12 +579,11 @@ regenerate_user_info <-
       data %>%
       filter(!is.na(!!col_filt_sym) & (!!col_filt_sym != ""))
 
-    if(nrow(res) == 0L) {
-      if(verbose) {
+    if (nrow(res) == 0L) {
+      if (verbose) {
         msg <-
-          sprintf(
-            "No records to return in \"last\" file because is.na(`%s`) == TRUE.", col_filt
-          )
+          sprintf("No records to return in \"last\" file because is.na(`%s`) == TRUE.",
+                  col_filt)
         message(msg)
       }
       return(res)
@@ -587,7 +608,7 @@ regenerate_user_info <-
 # do_xxx ----
 .preprocess_do_action_ratio <-
   function(user = NULL, ...) {
-    if(is.null(user)) {
+    if (is.null(user)) {
       user <- get_user_toscrape()
     }
     .validate_user(user)
@@ -610,18 +631,10 @@ regenerate_user_info <-
     data %>% filter(user == .user)
   }
 
-# # TODO: Use these after all functions are "stable"/"finalized" because
-# # these are very abstract.
-# .do_action_ratio <-
-#   function(user = NULL, ..., .f) {
-#     user <- .preprocess_do_action_ratio(user = user)
-#     purrr::walk(user,, ~.f(.x, ...))
-#   }
-
+# unused ----
 .COLS_LISTS_MEMBERS_ORDER <-
   c(
     "user_id",
-    "name",
     "user",
     "location",
     "description",
@@ -682,4 +695,3 @@ regenerate_user_info <-
     "profile_image_url",
     "profile_banner_url"
   )
-

@@ -268,3 +268,13 @@ headfoot_at <-
 #   as_tibble() %>%
 #   group_by(cyl) %>%
 #   headfoot_at()
+
+.create_pb <-
+  function(total, ..., width = 80, format = "[:bar] :percent eta :eta\n") {
+    progress::progress_bar$new(
+      total = total,
+      format = format,
+      width = width
+    )
+  }
+

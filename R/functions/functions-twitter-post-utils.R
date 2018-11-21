@@ -1,6 +1,4 @@
 
-
-
 # Reference: rtweet::emojis %>% filter(description %>% str_detect("^fire$"))
 .get_chr_emoji_fire <-
   function() {
@@ -35,16 +33,23 @@
     strftime(x, "%I:%M %p, %m/%d/%Y")
   }
 
-.slice_ratio_max <-
-  function(data, ...) {
+.slice_ratio_f <-
+  function(data, f, ..., na.rm = TRUE) {
     res <-
       data %>%
-      filter(ratio == max(ratio, na.rm = TRUE)) %>%
+      filter(ratio == f(ratio, na.rm = na.rm)) %>%
       slice(1)
-
-    .validate_onerow_df(res)
+    # # Note: This is overkill.
+    # .validate_onerow_df(res)
     res
   }
+
+.slice_ratio_hi <-
+  purrr::partial(.slice_ratio_f, f = max)
+
+.slice_ratio_lo <-
+  purrr::partial(.slice_ratio_f, f = min)
+
 
 .slice_ratio_log_pastposted <-
   function(data, .user, .status_id, ...) {
@@ -59,7 +64,7 @@
     head(data, 0)
   }
 
-# .check_ratio_min_frac <-
+# .check_ratio_lo_frac <-
 #   function(data,
 #            .n_row,
 #            .nm = deparse(substitute(.n_row)),
@@ -85,8 +90,9 @@
 #     data
 #   }
 
-
-.mark_ratio_min_frac_at <-
+# Note: Originally intended to use this for both `num` and `den`, but decided
+# to just use for `den`.
+.mark_ratio_frac_at <-
   function(data,
            col,
            value,
@@ -98,18 +104,11 @@
     stopifnot(any(col %in% names(data)))
     stopifnot(!any(value %in% names(data)))
 
-
     col_sym <- sym(col)
     data_marked <-
       data %>%
-      # filter(!!col_sym >= value)
       mutate(considered = if_else(!!col_sym < value, 1L, 0L))
 
-    # data_filt <- .check_ratio_min_frac(data = data_filt, .n_row = value)
-    # if(nrow(data_filt) == 0L) {
-    #   return(data_alt)
-    # }
-    # data_filt
     data_filt <-
       data_marked %>%
       filter(!!col_sym >= value)
@@ -121,7 +120,7 @@
         msg <-
           sprintf(
             paste0(
-              "Not posting since there are not enough tweets with `%s` > %.04f."
+              "Not posting since there are not enough tweets with `%s` > %.f."
             ),
             nm_value,
             value
@@ -139,6 +138,24 @@
       filter(posted == 0L)
   }
 
+.add_ratio_numden_cols <-
+  function(data, user_info = NULL, ...) {
+    if (is.null(user_info)) {
+      user_info <- import_user_info()
+    }
+
+    data %>%
+      inner_join(user_info, by = c("user")) %>%
+      mutate(
+        # ratio_num = reply_count,
+        ratio_den = (favorite_count + retweet_count),
+      ) %>%
+      mutate(
+        # ratio_num_frac = ratio_num / followers_count,
+        ratio_den_frac = ratio_den / followers_count
+      )
+  }
+
 .filter_ratio_log_byconfig <-
   function(data,
            .user,
@@ -150,7 +167,8 @@
            # ratio_den_min = config$post_ratio_den_min,
            # ratio_num_min = config$post_ratio_num_min,
            ratio_den_min_frac = config$post_ratio_den_min_frac,
-           # sratio_num_min_frac = config$post_ratio_num_min_frac,
+           # ratio_num_min_frac = config$post_ratio_num_min_frac,
+           ratio_min = config$post_ratio_min,
            verbose = config$verbose_post) {
     # data_filt <- data
     data_filt <- .filter_ratio_log_basic(data)
@@ -200,32 +218,16 @@
         stop(msg, call. = FALSE)
       }
     }
+    data_filt <-
+      data_filt %>%
+      .add_ratio_numden_cols(user_info = user_info)
 
     data_filt <-
       data_filt %>%
-      inner_join(user_info, by = c("user"))
-
-    data_filt <-
-      data_filt %>%
-      mutate(
-        ratio_den = (favorite_count + retweet_count),
-        ratio_num = reply_count
-      ) %>%
-      mutate(
-        ratio_den_frac = ratio_den / followers_count,
-        ratio_num_frac = ratio_num / followers_count
-      )
-
-
-    data_filt <-
-      .mark_ratio_min_frac_at(
-        data = data_filt,
+      .mark_ratio_frac_at(
         col = "ratio_den_frac",
         value = ratio_den_min_frac
       )
-    # if(nrow(data_filt) == 0L) {
-    #   return(data_alt)
-    # }
 
     cols <- names(data)
     data_filt <-
@@ -235,3 +237,201 @@
 
     data_filt
   }
+
+.create_text_post <-
+  function(user,
+           status_id,
+           ratio,
+           ratio_log_scrape,
+           ratio_last_post,
+           ...,
+           ratio_lo = config$post_ratio_lo,
+           reply = config$post_reply) {
+
+    text_post <-
+      sprintf(
+        "Congratulations @%s on your ratio of %.03f!",
+        user,
+        ratio
+      )
+
+    ratio_pastposted <-
+      ratio_log_scrape %>%
+      .slice_ratio_log_pastposted(
+        .user = user,
+        .status_id = status_id
+      )
+
+    if(nrow(ratio_pastposted) == 0L) {
+      chr_emoji <- .get_chr_emoji_fear()
+      text_post <-
+        sprintf(
+          paste0(
+            "%s This is the first time I've scored you. ",
+            "Be aware of your ratio with future tweets! %s"
+          ),
+          text_post,
+          chr_emoji
+        )
+    } else {
+
+      if(!is.null(ratio_last_post)) {
+        # Note: This data set should only have one record per screen name,
+        # so there should not be any need to `slice()`.
+        ratio_pastposted_last <-
+          ratio_last_post %>%
+          .slice_ratio_log_pastposted(
+            .user = user,
+            .status_id = status_id
+          )
+      } else {
+        # Note: Doing this in case `ratio_last_post` is not provided.
+        ratio_pastposted_last <-
+          ratio_pastposted %>%
+          arrange(desc(timestamp_post)) %>%
+          slice(1)
+
+      }
+      .validate_onerow_df(ratio_pastposted_last)
+
+      ratio_pastposted_hi <- .slice_ratio_hi(ratio_pastposted)
+      ratio_hi <- ratio_pastposted_hi %>% pull(ratio)
+      ratio_pastposted_lo <- .slice_ratio_lo(ratio_pastposted)
+      ratio_lo <- ratio_pastposted_hi %>% pull(ratio)
+      ratio_past1 <- ratio_pastposted_last %>% pull(ratio)
+
+      chr_emoji_lo <- .get_chr_emoji_thumbsup()
+      chr_emoji_hi <- .get_chr_emoji_fire()
+
+      if((ratio < ratio_lo) | (ratio > ratio_hi)) {
+        if (ratio < ratio_lo) {
+          term <- "LOW"
+          ratio_postposted_minmax <- ratio_pastposted_lo
+          ratio_lomax <- ratio_lo
+          chr_emoji <- chr_emoji_lo
+        } else if (ratio > ratio_hi) {
+          term <- "HIGH"
+          ratio_postposted_minmax <- ratio_pastposted_hi
+          ratio_lomax <- ratio_hi
+          chr_emoji <- chr_emoji_hi
+        }
+        timestamp_post_minmax <- ratio_pastposted_lomax %>% pull(timestamp_post)
+        timestamp_post_minmax <- .prettify_timestamp_post(timestamp_post)
+        text_post <-
+          sprintf(
+            "%s This ratio breaks your previous all-time %s (%.02f at %s)! %s",
+            text_post,
+            term,
+            ratio_lomax,
+            timestamp_post_minmax,
+            chr_emoji
+          )
+      } else {
+        if (ratio < ratio_past1) {
+          term <- "LOWER"
+          chr_emoji <- chr_emoji_lo
+        } else if (ratio >= ratio_past1) {
+          term <- "HIGHER"
+          chr_emoji <- chr_emoji_hi
+        }
+        timestamp_post_past1 <- ratio_pastposted_last %>% pull(timestamp_post)
+        timestamp_post_past1 <- .prettify_timestamp_post(timestamp_post_past1)
+        text_post <-
+          sprintf(
+            "%s This ratio is %s than the one (%.03f) I tweeted about last (at %s)! %s",
+            text_post,
+            term,
+            ratio_past1,
+            timestamp_post_past1,
+            chr_emoji
+          )
+      }
+    }
+
+    if(ratio < ratio_lo) {
+
+    }
+
+    if(reply) {
+      text_post <-
+        sprintf(
+          "%s %s",
+          text_post,
+          .make_twitter_url_reply(
+            .user = user,
+            .status_id = status_id
+          )
+        )
+    }
+    text_post
+  }
+
+.ratio_post <-
+  function(user,
+           status_id,
+           text_post,
+           ...,
+           reply = config$post_reply,
+           retweet = config$post_retweet,
+           favorite = config$post_favorite,
+           sentinel = config$post_status_id_sentinel,
+           token = .TOKEN,
+           verbose = config$verbose_post) {
+    # # Debugging...
+    # reply = FALSE
+    # retweet = FALSE
+    # favorite = FALSE
+
+    # Note: This is somewhat similar to `.preprocess_compare_n_rows()`.
+    if(sum(c(favorite, retweet, reply), na.rm = TRUE) < 1) {
+      if(verbose) {
+        msg <-
+          sprintf(
+            paste0(
+              "`reply`, `retweet`, and `favorite` are each `FALSE`. ",
+              "Returning `sentinel` (for `status_id_post`) for \"%s\"."
+            ),
+            user
+          )
+        message(msg)
+      }
+      return(invisible(sentinel))
+    }
+    if (favorite) {
+      resp <- rtweet::post_favorite(status_id, token = token)
+    }
+    if (retweet) {
+      resp <-
+        rtweet::post_tweet(
+          status = text_post,
+          retweet_id = status_id,
+          token = token
+        )
+    }
+    if (reply) {
+      # Note: This doesn't work for including source tweet with reply.
+      # resp <-
+      #   rtweet::post_tweet(
+      #     status = text_post,
+      #     in_reply_to_status_id = status_id,
+      #     token = token
+      #   )
+      resp <-
+        rtweet::post_tweet(
+          status = text_post,
+          token = token
+        )
+      if (verbose) {
+        msg <- sprintf("Posted the following tweet at %s:\n\"%s.\"", Sys.time(), text_post)
+        message(msg)
+      }
+    }
+    # if(!is.null(resp)) {
+    #   httr::warn_for_status(resp)
+    # }
+    # TODO: Get the status_id of the tweet (with a function run after `.do_post_ratio()`?
+    res <- ""
+    invisible(res)
+  }
+
+

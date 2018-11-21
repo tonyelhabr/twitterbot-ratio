@@ -16,6 +16,9 @@ rm("path_r_profile")
 suppressWarnings(suppressPackageStartupMessages(library("tidyverse")))
 suppressWarnings(suppressPackageStartupMessages(library("rlang")))
 suppressWarnings(suppressPackageStartupMessages(library("teplot")))
+suppressWarnings(suppressPackageStartupMessages(library("rtweet")))
+
+config <- config::get()
 
 paths_funcs <-
   list.files(
@@ -27,10 +30,9 @@ paths_funcs <-
 invisible(sapply(paths_funcs, source))
 rm("paths_funcs")
 
-config <- config::get()
-
 # NOTE: Not sure why this isn't working from the .Renviron file.
 options(readr.num_columns = 0)
 
 # user <- import_user()
 regenerate_tone()
+.TOKEN <- rtweet::get_token()

@@ -11,9 +11,9 @@ ratio_log_scrape %>% count(user, sort = TRUE)
 # .frac
 ratio_log_aug <-
   ratio_log_scrape %>%
+  # .add_ratio_numden_cols() %>%
   left_join(
     user_info %>%
-      # select(user, n_follower = followers_count, n_tweet = statuses_count)
       select(user, followers_count, statuses_count),
     by = "user"
   ) %>%

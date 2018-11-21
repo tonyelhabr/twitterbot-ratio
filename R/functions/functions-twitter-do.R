@@ -1,0 +1,64 @@
+
+# # TODO: Use these after all functions are "stable"/"finalized" because
+# # these are very abstract.
+.do_action_ratio_all <-
+  function(f_do,
+           f_get_user,
+           user = NULL,
+           ...,
+           path = NULL,
+           backup = TRUE,
+           clean = TRUE,
+           progress = TRUE) {
+    if (is.null(user)) {
+      user <- get_user_toscrape()
+      user <- user[1:2]
+    }
+    .validate_user_vector(user)
+    if (backup & !is.null(path)) {
+      .create_backup(path = path, clean = clean)
+    }
+    if (progress) {
+      pb <- .create_pb(total = length(user))
+    } else {
+      pb <- NULL
+    }
+    .f <- function(.user, .pb = NULL) {
+      f_do(user = .user)
+      if (!is.null(.pb)) {
+        .pb$tick()
+      }
+    }
+    purrr::walk(user, ~ .f(.user = .x, .pb = pb))
+  }
+
+# Note: Not using `purrr::partial()` here so that `user` can still be specified.
+do_scrape_ratio_all <-
+  function(f_do = .do_scrape_ratio,
+           f_get_user = get_user_toscrape,
+           user = NULL,
+           path = config$path_ratio_log_scrape,
+           ...) {
+    .do_action_ratio_all(
+      f_do = f_do,
+      f_get_user = f_get_user,
+      user = user,
+      path = path,
+      ...
+    )
+  }
+
+do_post_ratio_all <-
+  function(f_do = .do_post_ratio,
+           f_get_user = get_user_topost,
+           user = NULL,
+           path = config$path_ratio_log_scrape,
+           ...) {
+    .do_action_ratio_all(
+      f_do = f_do,
+      f_get_user = f_get_user,
+      user = user,
+      path = config$path_ratio_log_scrape,
+      ...
+    )
+  }

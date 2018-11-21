@@ -1,196 +1,4 @@
 
-.create_text_post <-
-  function(user,
-           status_id,
-           ratio,
-           ratio_log_scrape,
-           ratio_last_post,
-           ...,
-           reply = config$post_reply) {
-
-    text_post <-
-      sprintf(
-        "Congratulations @%s on your ratio of %.02f!",
-        user,
-        ratio
-      )
-
-    ratio_pastposted <-
-      ratio_log_scrape %>%
-      .slice_ratio_log_pastposted(
-        .user = user,
-        .status_id = status_id
-      )
-
-    if(nrow(ratio_pastposted) == 0L) {
-      chr_emoji <- .get_chr_emoji_fear()
-      text_post <-
-        sprintf(
-          paste0(
-            "%s This is the first time I've scored you. ",
-            "Be aware of your ratio with future tweets! %s"
-          ),
-          text_post,
-          chr_emoji
-        )
-    } else {
-
-      if(!is.null(ratio_last_post)) {
-        # Note: This data set should only have one record per screen name,
-        # so there should not be any need to `slice()`.
-        ratio_pastposted_last <-
-          ratio_last_post %>%
-          .slice_ratio_log_pastposted(
-            .user = user,
-            .status_id = status_id
-          )
-      } else {
-        # Note: Doing this in case `ratio_last_post` is not provided.
-        ratio_pastposted_last <-
-          ratio_pastposted %>%
-          arrange(desc(timestamp_post)) %>%
-          slice(1)
-
-      }
-
-      if(nrow(ratio_pastposted_last) > 1L) {
-        msg <-
-          paste0(
-            "It was not expected that this condition would ever be met.\n",
-            "(Check that `ratio_log_scrape_post` is getting properly updated.)"
-          )
-        stop(msg, call. = FALSE)
-      }
-
-      ratio_past1 <- pull(ratio_pastposted_last, ratio)
-      timestamp_post_past1 <- pull(ratio_pastposted_last, timestamp_post)
-      timestamp_post_past1 <- .prettify_timestamp_post(timestamp_post_past1)
-
-      if(ratio_past1 >= ratio) {
-        chr_emoji <- .get_chr_emoji_thumbsup()
-        text_post <-
-          sprintf(
-            "%s This ratio is lower the previous one (%.02f) I tweeted about (at %s)! %s",
-            text_post,
-            ratio_past1,
-            timestamp_post_past1,
-            chr_emoji
-          )
-      } else {
-
-        ratio_pastposted_max <- .slice_ratio_max(ratio_pastposted)
-        ratio_max <- pull(ratio_pastposted_max, ratio)
-
-        chr_emoji <- .get_chr_emoji_fire()
-
-        if(ratio_max > ratio) {
-
-          text_post <-
-            sprintf(
-              "%s This ratio tops the previous one (%.02f) I tweeted about (at %s)! %s",
-              text_post,
-              ratio_past1,
-              timestamp_post_past1,
-              chr_emoji
-            )
-        } else {
-
-          timestamp_post_max <- pull(ratio_pastposted_max, timestamp_post)
-          timestamp_post_max <- .prettify_timestamp_post(timestamp_post_max)
-          text_post <-
-            sprintf(
-              "%s This ratio breaks your previous all-time high (%.02f at %s)! %s",
-              text_post,
-              ratio_max,
-              timestamp_post_max,
-              chr_emoji
-            )
-        }
-      }
-    }
-
-    if(reply) {
-      text_post <-
-        sprintf(
-          "%s %s",
-          text_post,
-          .make_twitter_url_reply(
-            .user = user,
-            .status_id = status_id
-          )
-        )
-    }
-    text_post
-  }
-
-.ratio_post <-
-  function(user,
-           status_id,
-           text_post,
-           ...,
-           reply = config$post_reply,
-           retweet = config$post_retweet,
-           favorite = config$post_favorite,
-           sentinel = config$post_status_id_sentinel,
-           token = rtweet::get_token(),
-           verbose = config$verbose_post) {
-    # # Debugging...
-    # reply = FALSE
-    # retweet = FALSE
-    # favorite = FALSE
-
-    # Note: This is somewhat similar to `.preprocess_compare_n_rows()`.
-    if(sum(c(favorite, retweet, reply), na.rm = TRUE) < 1) {
-      if(verbose) {
-        msg <-
-          sprintf(
-            paste0(
-              "`reply`, `retweet`, and `favorite` are each `FALSE`. ",
-              "Returning `sentinel` (for `status_id_post`) for \"%s\"."
-            ),
-            user
-          )
-        message(msg)
-      }
-      return(invisible(sentinel))
-    }
-    if (favorite) {
-      resp <- rtweet::post_favorite(status_id, token = token)
-    }
-    if (retweet) {
-      resp <-
-        rtweet::post_tweet(
-          status = text_post,
-          retweet_id = status_id,
-          token = token
-        )
-    }
-    if (reply) {
-      # Note: This doesn't work for including source tweet with reply.
-      # resp <-
-      #   rtweet::post_tweet(
-      #     status = text_post,
-      #     in_reply_to_status_id = status_id,
-      #     token = token
-      #   )
-      resp <-
-        rtweet::post_tweet(
-          status = text_post,
-          token = token
-        )
-      if (verbose) {
-        msg <- sprintf("Posted the following tweet at %s:\n\"%s.\"", Sys.time(), text_post)
-        message(msg)
-      }
-    }
-    # if(!is.null(resp)) {
-    #   httr::warn_for_status(resp)
-    # }
-    # TODO: Get the status_id of the tweet (with a function run after `.do_post_ratio()`?
-    res <- ""
-    invisible(res)
-  }
-
 # Note: Default for `user` is `NULL` so that code can dynamically
 # determine whether to post tweets for all screen names or just one.
 .do_post_ratio <-
@@ -259,7 +67,7 @@
     ratio_topost_raw <-
       ratio_log_scrape_filt %>%
       .filter_ratio_log_basic() %>%
-      .slice_ratio_max()
+      .slice_ratio_hi()
 
     suppressMessages(
       ratio_notposted_raw <-
@@ -356,17 +164,19 @@
     was_posted <- ifelse(status_id_posted != sentinel, TRUE, FALSE)
 
     if(!was_posted) {
-      if(verbose) {
-        msg <-
-          sprintf(
-            paste0(
-              "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
-              "being reverted (because `sentinel` was detected) for \"%s\"."
-          ),
-          user
-          )
-        message(msg)
-      }
+      # Note: This is "too" verbose (since another message
+      # is most likely sent before with the usage of `delay`).
+      # if(verbose) {
+      #   msg <-
+      #     sprintf(
+      #       paste0(
+      #         "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
+      #         "being reverted (because `sentinel` was detected) for \"%s\"."
+      #     ),
+      #     user
+      #     )
+      #   message(msg)
+      # }
       ratio_log_scrape_export <- ratio_log_scrape
     }
 
@@ -378,23 +188,21 @@
     invisible(path_ratio_last_post)
   }
 
-
-do_post_ratio_all <-
-  function(user = NULL, ..., backup = TRUE) {
-    # Note: The interactive statement can be removed. It's purely for debugging purposes.
-    if(is.null(user)) {
-      user <- get_user_topost()
-      # user <- user[1:5]
-    }
-    .validate_user_vector(user)
-    if(backup) {
-      .create_backup(path = config$path_ratio_log_scrape)
-    }
-    .f <- function(.user, .pb) {
-      .do_post_ratio(user = .user)
-      .pb$tick()
-    }
-    pb <- progress::progress_bar$new(total = length(user))
-    purrr::walk(user, ~.f(.user = .x, .pb = pb))
-  }
+# do_post_ratio_all <-
+#   function(user = NULL, ..., backup = TRUE, progress = config$progress_post) {
+#     if(is.null(user)) {
+#       user <- get_user_topost()
+#       # user <- user[1:5]
+#     }
+#     .validate_user_vector(user)
+#     if(backup) {
+#       .create_backup(path = config$path_ratio_log_scrape)
+#     }
+#     .f <- function(.user, .pb) {
+#       .do_post_ratio(user = .user)
+#       .pb$tick()
+#     }
+#     pb <- progress::progress_bar$new(total = length(user))
+#     purrr::walk(user, ~.f(.user = .x, .pb = pb))
+#   }
 
