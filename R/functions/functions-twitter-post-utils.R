@@ -435,7 +435,6 @@
       return(invisible(sentinel))
     }
 
-    browser()
     if (favorite) {
       resp <- rtweet::post_favorite(status_id, token = token)
     }
@@ -460,10 +459,14 @@
           status = text_post,
           token = token
         )
-      if (verbose) {
-        msg <- sprintf("Posted the following tweet at %s:\n\"%s.\"", Sys.time(), text_post)
-        message(msg)
-      }
+    }
+    if(resp$errors[[1]]$code == 261) {
+      message(resp$errors[[1]]$message)
+      return(invisible(sentinel))
+    }
+    if (verbose & reply) {
+      msg <- sprintf("Posted the following tweet at %s:\n\"%s.\"", Sys.time(), text_post)
+      message(msg)
     }
     # if(!is.null(resp)) {
     #   httr::warn_for_status(resp)

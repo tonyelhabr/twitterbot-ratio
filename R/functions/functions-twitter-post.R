@@ -99,22 +99,6 @@
       )
 
     if(post) {
-      text_post <- pull(ratio_topost, text_post)
-      msg <-
-        sprintf(
-          paste0(
-            "The message that would have been posted (if `post` were set to `TRUE`) is:\n",
-            "\"%s\""
-          ),
-          text_post
-        )
-      message(msg)
-
-      # Note: Instead of returning, try out the rest of the code.
-      ratio_wasposted_raw <- ratio_topost %>%  mutate(status_id_post = sentinel)
-
-    } else {
-
       ratio_wasposted_raw <-
         ratio_topost %>%
         mutate(
@@ -128,6 +112,29 @@
               )
             )
         )
+    } else {
+      ratio_wasposted_raw <- ratio_topost %>%  mutate(status_id_post = sentinel)
+    }
+
+    status_id_post <- ratio_was_posted_raw %>% pull(status_id_post)
+    was_posted <- ifelse(status_id_post != sentinel, TRUE, FALSE)
+    if(!was_posted) {
+      text_post <- ratio_topost %>% pull(text_post)
+      if(post) {
+        reason <- "if there were not an error"
+      } else {
+        reason <- "if `post` were set to `TRUE`"
+      }
+      msg <-
+        sprintf(
+          paste0(
+            "The message that would have been posted (%s) is:\n",
+            "\"%s\""
+          ),
+          reason,
+          text_post
+        )
+      message(msg)
     }
 
     suppressMessages(
@@ -161,23 +168,20 @@
       data2 = ratio_log_scrape
     )
 
-    status_id_posted <- pull(ratio_wasposted_raw, status_id_post)
-    was_posted <- ifelse(status_id_posted != sentinel, TRUE, FALSE)
-
     if(!was_posted) {
       # Note: This is "too" verbose (since another message
       # is most likely sent before with the usage of `post`).
-      # if(verbose) {
-      #   msg <-
-      #     sprintf(
-      #       paste0(
-      #         "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
-      #         "being reverted (because `sentinel` was detected) for \"%s\"."
-      #     ),
-      #     user
-      #     )
-      #   message(msg)
-      # }
+      if(verbose) {
+        msg <-
+          sprintf(
+            paste0(
+              "Potential updates to `ratio_log_scrape` and `ratio_last_scrape` are ",
+              "being reverted (because `sentinel` was detected) for \"%s\"."
+          ),
+          user
+          )
+        message(msg)
+      }
       ratio_log_scrape_export <- ratio_log_scrape
       return(NULL)
     }

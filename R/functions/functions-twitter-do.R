@@ -13,7 +13,7 @@
     if (is.null(user)) {
       user <- get_user_toscrape()
       if(interactive()) {
-        user <- user[1:5]
+        user <- user[1]
         # user <- sample(user, size = 5)
         # user <- "bykevinclark"
         # message(Filtering to a small subset of users. Remove this action!)
