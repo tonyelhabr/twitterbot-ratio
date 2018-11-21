@@ -100,14 +100,11 @@
 
 
     col_sym <- sym(col)
-    browser()
-    data %>% select(considered, everything())
     data_marked <-
       data %>%
       # filter(!!col_sym >= value)
       mutate(considered = if_else(!!col_sym < value, 1L, 0L))
 
-    data_marked %>% filter(considered == 1L)
     # data_filt <- .check_ratio_min_frac(data = data_filt, .n_row = value)
     # if(nrow(data_filt) == 0L) {
     #   return(data_alt)
@@ -124,7 +121,7 @@
         msg <-
           sprintf(
             paste0(
-              "Not posting since there are not enough tweets with `%s` > %.03f."
+              "Not posting since there are not enough tweets with `%s` > %.04f."
             ),
             nm_value,
             value
@@ -153,7 +150,7 @@
            # ratio_den_min = config$post_ratio_den_min,
            # ratio_num_min = config$post_ratio_num_min,
            ratio_den_min_frac = config$post_ratio_den_min_frac,
-           ratio_num_min_frac = config$post_ratio_num_min_frac,
+           # sratio_num_min_frac = config$post_ratio_num_min_frac,
            verbose = config$verbose_post) {
     # data_filt <- data
     data_filt <- .filter_ratio_log_basic(data)
@@ -164,7 +161,7 @@
         msg <-
           sprintf(
             paste0(
-              "Not posting since this user hasn't made %d tweets since last post.",
+              "Not posting since this user hasn't made %d tweets since last post. ",
               "(User has made %d tweets.)"
             ),
             n_since_min,
@@ -197,7 +194,7 @@
 
     if (is.null(user_info)) {
       user_info <- import_user_info()
-      user_info <- .filter_byuser(user_info, .user = user)
+      user_info <- .filter_byuser(user_info, .user = .user)
       if (is.null(user_info)) {
         msg <- "No info about user in `user_info` file!"
         stop(msg, call. = FALSE)
@@ -230,15 +227,11 @@
     #   return(data_alt)
     # }
 
-    data_filt <- .filter_ratio_log_basic(data_filt)
-
+    cols <- names(data)
     data_filt <-
-      .mark_ratio_min_frac_at(
-        data = data_filt,
-        col = "ratio_num_frac",
-        value = ratio_num_min_frac
-      )
+      data_filt %>%
+      .filter_ratio_log_basic() %>%
+      select(one_of(cols))
 
-    data_filt <- .filter_ratio_log_basic(data_filt)
     data_filt
   }

@@ -6,7 +6,9 @@
     "category1",
     "category2",
     "user_tone",
-    "audience_tone"
+    "audience_tone",
+    "scrape",
+    "post"
   )
 
 .COLS_USER_INFO_ORDER <-
@@ -46,7 +48,7 @@
   )
 .COLS_RATIO_SCORE_ORDER <-
   c(
-    "qualified",
+    # "qualified",
     "considered",
     "posted",
     "status_id_post",
@@ -313,12 +315,10 @@ import_tone <-
       tone <- import_tone()
     }
 
-    # data %>%
-    #   filter(category1 == "sports") %>%
-    #   .join_user_and_tone(tone = tone) %>%
-    #   filter(user_mood %in% c("neutral", "negative")) %>%
-    #   filter(audience_mood %in% c("negative"))
-    data
+    res <-
+      data %>%
+      filter(scrape == 1L)
+    res
   }
 
 get_user_toscrape <-
@@ -606,6 +606,7 @@ regenerate_user_info <-
 # (initially in the `.do_post_ratio()` function, but perhaps elsewhere as well).
 .filter_byuser <-
   function(data, .user, ...) {
+    stopifnot(length(.user) == 1L)
     data %>% filter(user == .user)
   }
 

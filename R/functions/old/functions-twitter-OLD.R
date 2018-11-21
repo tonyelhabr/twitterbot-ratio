@@ -18,7 +18,7 @@
            n = .N_SEARCH,
            include_rts = FALSE,
            retryonratelimit = TRUE,
-           token = config$token,
+           token = rtweet::get_token(),
            verbose = config$verbose_scrape) {
 
     rtweet::search_tweets(

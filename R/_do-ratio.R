@@ -1,16 +1,17 @@
 
-# Note: command is /c C:/Users/aelhabr/Documents/R/R-3.4.0/bin/Rscript.exe "O:/_other/projects/twitterbot-ratio/R/_scrape-ratio.R" abc
+# Note: command is /c C:/Users/aelhabr/Documents/R/R-3.4.0/bin/Rscript.exe "O:/_other/projects/twitterbot-ratio/R/_do-ratio.R" scrape
 # rate_limit <- rtweet::rate_limit(token = rtweet::get_token())
+
+dir_proj <- "O:/_other/projects/"
+if(!dir.exists(dir_proj)) {
+  dir_proj <- "C:/Users/aelhabr/Documents/projects/"
+}
+if(!dir.exists(dir_proj)) {
+  stop("Project directory does not exist!", call. = FALSE)
+}
+
 if (!interactive()) {
   args <- commandArgs(trailingOnly = TRUE)
-
-  dir_proj <- "O:/_other/projects/"
-  if(!dir.exists(dir_proj)) {
-    dir_proj <- "C:/Users/aelhabr/Documents/projects/"
-  }
-  if(!dir.exists(dir_proj)) {
-    stop("Project directory does not exist!", call. = FALSE)
-  }
 
   proj <- "twitterbot-ratio"
   wd <- file.path(dir_proj, proj)
@@ -24,22 +25,28 @@ if (!interactive()) {
   # token <- rtweet::get_token()
 
 } else {
+  message("Not interactive!")
   args <- character()
   # args <- "scrape"
 }
 
+# message("args: ", args)
+
 if (length(args) == 0) {
   if(grepl("^O:", dir_proj)) {
-  args <- "default"
+    args <- "default"
   } else {
     args <- "scrape"
+    # args <- "post"
   }
 } else {
   if (!(any(c("post", "scrape") %in% args))) {
     message(sprintf('You must specify either "scrape" or "post" (not "%s"). Defaulting to "default".', args))
+    args <- "default"
   }
-  args <- "default"
 }
+
+# message("args: ", args)
 
 f <-
   switch(

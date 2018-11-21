@@ -132,7 +132,7 @@
            retweet = config$post_retweet,
            favorite = config$post_favorite,
            sentinel = config$post_status_id_sentinel,
-           token = config$token,
+           token = rtweet::get_token(),
            verbose = config$verbose_post) {
     # # Debugging...
     # reply = FALSE
@@ -209,15 +209,12 @@
 
     # TODO (Long-term): Write a function to do the same pre-processing for the
     # `do_scrape/ratio_post()` functions.
-    message(rep("-", 80L))
+    # message(rep("-", 80L))
     .validate_user_1(user)
 
     if (is.null(ratio_log_scrape)) {
-      ratio_log_scrape <- .import_ratio_log_scrape_possibly()
-      if (is.null(ratio_log_scrape)) {
-        msg <- sprintf("Could not import `ratio_log_scrape`.")
-        stop(msg, call. = FALSE)
-      }
+      # Note: Don't throw an informative error message here. It's highly unlikely it would ever be encountered.
+      ratio_log_scrape <- import_ratio_log_scrape()
     }
 
     .validate_ratio_df_robustly(ratio_log_scrape)
@@ -297,7 +294,7 @@
       msg <-
         sprintf(
           paste0(
-            "If `delay` were set to `TRUE`, the message that would have been posted is:\n",
+            "The message that would have been posted (if `delay` were set to `TRUE`) is:\n",
             "%s"
           ),
           text_post
@@ -385,17 +382,19 @@
 do_post_ratio_all <-
   function(user = NULL, ..., backup = TRUE) {
     # Note: The interactive statement can be removed. It's purely for debugging purposes.
-    if(interactive() || is.null(user)) {
+    if(is.null(user)) {
       user <- get_user_topost()
-      if(interactive()) {
-        user <- user[1:2]
-      }
+      # user <- user[1:5]
     }
     .validate_user_vector(user)
-
     if(backup) {
       .create_backup(path = config$path_ratio_log_scrape)
     }
-    purrr::walk(user, ~.do_post_ratio(user = .x))
+    .f <- function(.user, .pb) {
+      .do_post_ratio(user = .user)
+      .pb$tick()
+    }
+    pb <- progress::progress_bar$new(total = length(user))
+    purrr::walk(user, ~.f(.user = .x, .pb = pb))
   }
 

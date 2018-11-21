@@ -81,9 +81,9 @@
   }
 
 .get_tl_first <-
-  function(user, ..., n = config$n_tl_new, token = config$token, verbose = config$verbose_scrape) {
+  function(user, ..., n = config$n_tl_new, token = rtweet::get_token(), verbose = config$verbose_scrape) {
     if(verbose) {
-      msg <- sprintf("Getting last %d tweets from timeline for \"%s\".", n, user)
+      msg <- sprintf("\nGetting last %d tweets from timeline for \"%s\".", n, user)
       message(msg)
     }
 
@@ -103,9 +103,9 @@
 .get_tl_self_possibly <- purrr::possibly(.get_tl_self, otherwise = NULL)
 
 .get_tl_since <-
-  function(user, since_id, ..., token = config$token, verbose = config$verbose_scrape) {
+  function(user, since_id, ..., token = rtweet::get_token(), verbose = config$verbose_scrape) {
     if(verbose) {
-      msg <- sprintf("Getting timeline for \"%s\" since last evaluated tweet: %s", user, since_id)
+      msg <- sprintf("\nGetting timeline for \"%s\" since last evaluated tweet: %s", user, since_id)
       message(msg)
     }
 

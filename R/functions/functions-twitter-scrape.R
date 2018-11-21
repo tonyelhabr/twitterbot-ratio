@@ -18,7 +18,7 @@
     # verbose = config$verbose_scrape
 
     # message(rep("-", getOption("width")))
-    message(rep("-", 80L))
+    # message(rep("-", 80L))
     .validate_user_1(user)
 
     if (is.null(ratio_log_scrape)) {
@@ -71,17 +71,18 @@
         }
       }
 
+      if(is.null(tl)) {
+        msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", user)
+        message(msg)
+        return(NULL)
+      }
+
       if(nrow(tl) == 0L) {
         msg <- sprintf("Did not find any tweets for \"%s\".", user)
         message(msg)
         return(NULL)
       }
 
-      if(is.null(tl)) {
-        msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", user)
-        message(msg)
-        return(NULL)
-      }
     }
 
     .validate_tl_df(tl)
@@ -92,11 +93,11 @@
     n_row_tl_filt <- nrow(tl_filt)
     if (verbose) {
       if(n_row_tl_filt == 0L) {
-        msg <- sprintf("No tweets to evaluate for %s.", user)
+        msg <- sprintf("No tweets to evaluate for \"%s\".", user)
         message(msg)
         return(NULL)
       }
-      msg <- sprintf("Evaluating %s tweet(s) for %s.", n_row_tl_filt, user)
+      msg <- sprintf("Evaluating %d tweet(s) for \"%s\".", n_row_tl_filt, user)
       message(msg)
     }
 
@@ -136,18 +137,30 @@
   }
 
 do_scrape_ratio_all <-
-  function(user = NULL, ..., backup = TRUE) {
-    if(interactive() || is.null(user)) {
+  function(user = NULL, ..., backup = TRUE, progress = TRUE) {
+    if(is.null(user)) {
       user <- get_user_toscrape()
-      if(interactive()) {
-        user <- user[1:5]
-      }
+      user <- user[6:10]
     }
     .validate_user_vector(user)
-
-    if(interactive() || backup) {
+    if(backup) {
       .create_backup(path = config$path_ratio_log_scrape)
     }
-    purrr::walk(user, ~.do_scrape_ratio(user = .x))
+    if(progress) {
+      pb <-
+        progress::progress_bar$new(
+          format = "[:bar] :percent eta :eta\n",
+          total = length(user),
+          width = 80
+        )
+      .f <- function(.user, .pb) {
+        .do_scrape_ratio(user = .user)
+        .pb$tick()
+      }
+      purrr::walk(user, ~.f(.user = .x, .pb = pb))
+    } else {
+      .f <- .do_scrape_ratio
+      purrr::walk(user, ~.f(.user = .x))
+    }
   }
 
