@@ -20,20 +20,6 @@ suppressWarnings(suppressPackageStartupMessages(library("rtweet")))
 
 config <- config::get()
 
-# Reference: https://github.com/mkearney/rtweet/issues/156.
-# .TOKEN <- rtweet::get_token()
-# .TOKEN <- readr::read_rds(as.character(Sys.getenv()["TWITTER_PAT"]))
-.TOKEN <-
-  rtweet::create_token(
-    app = "pundit_ratio",
-    consumer_key = "NDtgKE4sJAP6HQIzA1SV5IiwN",
-    consumer_secret = "XH7q9Pvogd0e3knUd5Vry6Dc2EFDPutLFKqzOVnlZtaAqxrs3x",
-    access_token = "1061748524168216576-IvpeGEwq9hgfxyg8lJetArNzd6rmMW",
-    access_secret = "NzMug5p1xhtkcX9JGMjMD6Oc6nPFxDupp77uaxRCWJUfD"
-  )
-# print(.TOKEN)
-
-
 paths_funcs <-
   list.files(
     path = file.path("R", "functions"),

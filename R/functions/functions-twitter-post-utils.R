@@ -434,6 +434,8 @@
       }
       return(invisible(sentinel))
     }
+
+    browser()
     if (favorite) {
       resp <- rtweet::post_favorite(status_id, token = token)
     }

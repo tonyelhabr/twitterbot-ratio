@@ -13,11 +13,10 @@
     if (is.null(user)) {
       user <- get_user_toscrape()
       if(interactive()) {
-        # user <- user[1:50]
+        user <- user[1:5]
         # user <- sample(user, size = 5)
         # user <- "bykevinclark"
-        # msg <- "Filtering to a small subset of users. Remove this action!"
-        message(msg)
+        # message(Filtering to a small subset of users. Remove this action!)
       }
     }
     .validate_user_vector(user)
