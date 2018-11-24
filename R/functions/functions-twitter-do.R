@@ -36,7 +36,7 @@
         .pb$tick()
       }
     }
-    purrr::pwalk(user, ~ .f(user = .x, ..., .pb = pb))
+    purrr::pwalk(user, ~ .f(.user = .x, ..., .pb = pb))
   }
 
 # Note: Not using `purrr::partial()` here so that `user` can still be specified.

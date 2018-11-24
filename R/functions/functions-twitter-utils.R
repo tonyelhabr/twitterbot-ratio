@@ -401,11 +401,11 @@ export_ratio_first_scrape <-
     append = FALSE,
     backup = FALSE
   )
-export_ratio_log_scrape_scrape <-
+export_ratio_log_scrape <-
   purrr::partial(
     .export_twitter_file,
     path = config$path_ratio_log_scrape,
-    append = file.exists(config$path_ratio_log_scrape),
+    append = FALSE,
     backup = FALSE
   )
 export_ratio_log_scrape_post <-

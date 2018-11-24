@@ -25,8 +25,8 @@ if (!interactive()) {
 # message("args: ", args)
 
 if (length(args) == 0) {
-  args <- "scrape"
-  # args <- "post"
+  # args <- "scrape"
+  args <- "post"
   # args <- "default"
 } else {
   if (!(any(c("post", "scrape") %in% args))) {

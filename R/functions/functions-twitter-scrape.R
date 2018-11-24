@@ -226,15 +226,20 @@
       .add_score_cols_at() %>%
       arrange(created_at)
 
-    browser()
+    # browser()
     ratio_log_scrape_export <-
       bind_rows(
         ratio_log_scrape,
         ratio_scrape
       )
 
+    .compare_n_row_eq(
+      data1 = ratio_log_scrape_export,
+      data2 = bind_rows(ratio_log_scrape, ratio_scrape)
+    )
+
     path_ratio_log_scrape <-
-      export_ratio_log_scrape_scrape(ratio_log_scrape_export)
+      export_ratio_log_scrape(ratio_log_scrape_export)
 
     ratio_file_scrape_export <-
       ..convert_ratio_file_scrape(
@@ -245,7 +250,7 @@
     path_ratio_file_scrape <-
       ..export_ratio_file_scrape(
         method = method,
-        data = ratio_scrape
+        data = ratio_file_scrape_export
       )
 
     invisible(reply)
