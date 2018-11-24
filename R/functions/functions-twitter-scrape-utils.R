@@ -80,7 +80,7 @@
 .get_tl_first <-
   function(.user,
            ...,
-           n = config$n_tl_new,
+           .n = config$n_tl_new,
            token = .TOKEN,
            # token = rtweet::get_token(),
            verbose = config$verbose_scrape) {
@@ -99,7 +99,7 @@
     suppressMessages(
       rtweet::get_timeline(
         user = .user,
-        n = n,
+        n = .n,
         token = token,
         ...
       ) %>%
@@ -116,11 +116,11 @@
 
 .get_tl_self_possibly <- purrr::possibly(.get_tl_self, otherwise = NULL)
 
-
 .get_tl_since <-
   function(.user,
-           .since_id,
+           .id,
            ...,
+           .n = config$n_tl_since,
            token = .TOKEN,
            # token = rtweet::get_token(),
            verbose = config$verbose_scrape) {
@@ -136,8 +136,9 @@
     suppressMessages(
       rtweet::get_timeline(
         user = .user,
-        since_id = .since_id,
+        since_id = .id,
         token = token,
+        # n = .n,
         ...
       ) %>%
         .rename_tl() %>%
@@ -147,6 +148,36 @@
 
 .get_tl_since_possibly <-
   purrr::possibly(.get_tl_since, otherwise = NULL)
+
+.get_tl_until <-
+  function(.user,
+           .d,
+           ...,
+           .n = config$n_tl_until,
+           token = .TOKEN,
+           # token = rtweet::get_token(),
+           verbose = config$verbose_scrape) {
+    if (verbose) {
+      msg <- sprintf(
+        paste0("\nGetting timeline for \"%s\" before first evaluated tweet: %s"),
+        .user,
+        .id
+      )
+      message(msg)
+    }
+
+    suppressMessages(
+      rtweet::get_timeline(
+        user = .user,
+        max_id = .id,
+        n = .n,
+        token = token,
+        ...
+      ) %>%
+        .rename_tl() %>%
+        .filter_tweet_type()
+    )
+  }
 
 
 .filter_tl_bytime <-

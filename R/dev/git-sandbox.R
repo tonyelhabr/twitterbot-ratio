@@ -23,6 +23,6 @@ if(length(path_gitconfig) == 1L) {
 }
 
 system('git status')
-system('git add .')
-system('git commit -m "auto"')
+system('git add figs/')
+system('git commit -m "updating figs"')
 system('git push -u origin master')

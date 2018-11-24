@@ -1,18 +1,99 @@
 
+.interprete_scrape_method <-
+  function(method) {
+    switch(method, since = "last", until = "first")
+  }
+
+..import_ratio_file_scrape_possibly <-
+  function(method, data, ...) {
+    meaning <- .interprete_scrape_method()
+    f <- sprintf(".import_ratio_%s_scrape_possibly", meaning)
+    purrr::invoke(f, list(...))
+  }
+
+
+..convert_ratio_file_scrape <-
+  function(method, data, ...) {
+    meaning <- .interprete_scrape_method()
+    f <- sprintf(".convert_ratio_log_scrape_to_%s_scrape", meaning)
+    purrr::invoke(f, list(data = data, ...))
+  }
+
+..export_ratio_file_scrape <-
+  function(method, data, ...) {
+    meaning <- .interprete_scrape_method()
+    f <- sprintf("export_ratio_%s_scrape", meaning)
+    purrr::invoke(f, list(data = data, ...))
+  }
+
+..import_ratio_file_scrape <-
+  function(method,
+           ratio_log_scrape,
+           ratio_file_scrape = NULL,
+           ...) {
+
+    if (is.null(ratio_file_scrape)) {
+
+      ratio_file_scrape <- ..import_ratio_file_scrape_possibly(method = method)
+
+      if (is.null(ratio_file_scrape)) {
+        if (verbose) {
+          msg <-
+            sprintf("Creating `ratio_%s_scrape` file from `ratio_log_scrape`.", meaning)
+          message(msg)
+        }
+
+        ratio_file_scrape <-
+          ..convert_ratio_file_scrape(
+            method = method,
+            data = ratio_log_scrape
+          )
+
+        path_ratio_file_scrape <-
+          ..export_ratio_file_scrape(
+            method = method,
+            data = ratio_file_scrape
+          )
+      }
+    }
+
+    .compare_n_row_le(
+      data1 = ratio_file_scrape,
+      data2 = ratio_log_scrape
+    )
+    .validate_ratio_df_robustly(ratio_file_scrape)
+    # .validate_ratio_df(ratio_file_scrape)
+    .validate_ratio_onerowpergrp_df(ratio_file_scrape)
+    ratio_file_scrape
+  }
+
+..get_tl_possibly <-
+  function(method, ...) {
+    # meaning <- .interprete_scrape_method()
+    f <- sprintf(".get_tl_%s_possibly", method)
+    purrr::invoke(f, list(...))
+  }
+
 .do_scrape_ratio <-
   function(user,
-           tl = NULL,
-           since_id = NULL,
-           ratio_log_scrape = NULL,
-           ratio_last_scrape = NULL,
+           method = c("since", "until"),
            ...,
+           tl = NULL,
+           # id = NULL,
+           # id = NULL,
+           id = NULL,
+           ratio_log_scrape = NULL,
+           # ratio_last_scrape = NULL,
+           # ratio_first_scrape = NULL,
+           ratio_file_scrape = NULL,
            cache = config$tl_cache,
            sentinel = config$scrape_reply_sentinel,
            verbose = config$verbose_scrape) {
 
+
     # .user = "RealSkipBayless"
     # tl = NULL
-    # since_id = NULL
+    # id = NULL
     # ratio_log_scrape = NULL
     # ratio_last_scrape = NULL
     # cache = config$cache
@@ -20,7 +101,11 @@
 
     # message(rep("-", getOption("width")))
     # message(rep("-", 80L))
+    browser()
+
     .validate_user_scalar(user)
+    method <- match.arg(method)
+    # meaning <- .interprete_scrape_method(method)
 
     if (is.null(ratio_log_scrape)) {
       ratio_log_scrape <- .import_ratio_log_scrape_possibly()
@@ -34,45 +119,32 @@
       }
     }
 
-    .validate_ratio_df_robustly(ratio_log_scrape)
-
-    if (is.null(ratio_last_scrape)) {
-      ratio_last_scrape <- .import_ratio_last_scrape_possibly()
-
-      if (is.null(ratio_last_scrape)) {
-        if (verbose) {
-          msg <-
-            sprintf("Creating missing `ratio_last_scrape` file from `ratio_log_scrape`.")
-          message(msg)
-        }
-        ratio_last_scrape <- .convert_ratio_log_scrape_to_last_scrape(ratio_log_scrape)
-        export_ratio_last_scrape(ratio_last_scrape)
-      }
-    }
-
-    .compare_n_row_le(
-      data1 = ratio_last_scrape,
-      data2 = ratio_log_scrape
-    )
-    .validate_ratio_df_robustly(ratio_last_scrape)
-    .validate_ratio_onerowpergrp_df(ratio_last_scrape)
+    # .validate_ratio_df_robustly(ratio_log_scrape)
+    .validate_ratio_df(ratio_log_scrape)
 
     # browser()
     if (is.null(tl)) {
-      if (is.null(since_id)) {
-        ratio_last_scrape_filt <-
-          ratio_last_scrape %>%
+
+      ratio_file_scrape <-
+        ..import_ratio_file_scrape(
+          method = method,
+          ratio_log_scrape = ratio_log_scrape
+        )
+
+      if (is.null(id)) {
+        ratio_file_scrape_filt <-
+          ratio_file_scrape %>%
           .filter_byuser(.user = user)
-        if(nrow(ratio_last_scrape_filt) > 0L) {
-          since_id <-
-            ratio_last_scrape_filt %>%
+        if(nrow(ratio_file_scrape_filt) > 0L) {
+          id <-
+            ratio_file_scrape_filt %>%
             pull(status_id)
-          tl <- .get_tl_since_possibly(.user = user, .since_id = since_id)
+          # tl <- .get_tl_since_possibly(.user = user, .id = id)
+          tl <- ..get_tl_possibly(method = method, .user = user, .id = id)
         } else {
           tl <- .get_tl_first_possibly(.user = user)
         }
       }
-
       if(is.null(tl)) {
         msg <- sprintf("Something went wrong when retrieving tweets for \"%s\".", user)
         message(msg)
@@ -120,7 +192,7 @@
             list(user, status_id),
             ~.get_reply_count_hack_possibly(user = ..1, status_id = ..2)
             # ~..f(user = ..1, status_id = ..2)
-            )
+          )
       )
 
     reply_sentinel <-
@@ -159,14 +231,23 @@
 
     path_ratio_log_scrape <- export_ratio_log_scrape_scrape(ratio_log_scrape_export)
 
-    ratio_last_scrape_export <-
+    ratio_log_bind <-
       bind_rows(
-        ratio_last_scrape,
+        ratio_file_scrape,
         ratio_log_scrape_export
-      ) %>%
-      .convert_ratio_log_scrape_to_last_scrape()
+      )
 
-    path_ratio_last_scrape <- export_ratio_last_scrape(ratio_last_scrape_export)
+    ratio_file_scrape_export <-
+      ..convert_ratio_file_scrape(
+        method = method,
+        data = ratio_log_bind
+      )
+
+    path_ratio_file_scrape <-
+      ..export_ratio_file_scrape(
+        method = method,
+        data = ratio_file_scrape
+      )
 
     invisible(reply)
   }

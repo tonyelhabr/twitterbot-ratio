@@ -11,9 +11,9 @@
            clean = TRUE,
            progress = TRUE) {
     if (is.null(user)) {
-      user <- get_user_toscrape()
+      f_user <- f_get_user()
       if(interactive()) {
-        user <- user[1]
+        # user <- user[1]
         # user <- sample(user, size = 5)
         # user <- "bykevinclark"
         # message(Filtering to a small subset of users. Remove this action!)
@@ -28,15 +28,13 @@
     } else {
       pb <- NULL
     }
-    .f <- function(.user, .pb = NULL) {
-      f_do(user = .user)
-      # browser()
+    .f <- function(.user, ..., .pb = NULL) {
+      f_do(user = .user, ...)
       if (!is.null(.pb)) {
         .pb$tick()
       }
-      # browser()
     }
-    purrr::walk(user, ~ .f(.user = .x, .pb = pb))
+    purrr::walk(user, ~ .f(.user = .x, ..., .pb = pb))
   }
 
 # Note: Not using `purrr::partial()` here so that `user` can still be specified.

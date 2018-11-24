@@ -245,14 +245,24 @@ import_ratio_last_scrape <-
     path = config$path_ratio_last_scrape,
     f_validate = .validate_ratio_df
   )
+import_ratio_first_scrape <-
+  purrr::partial(
+    .import_ratio_file,
+    path = config$path_ratio_first_scrape,
+    f_validate = .validate_ratio_df
+  )
 import_ratio_log_scrape <-
-  purrr::partial(.import_ratio_file,
-                 path = config$path_ratio_log_scrape,
-                 f_validate = .validate_ratio_df)
+  purrr::partial(
+    .import_ratio_file,
+    path = config$path_ratio_log_scrape,
+    f_validate = .validate_ratio_df
+  )
 import_ratio_last_post <-
-  purrr::partial(.import_ratio_file,
-                 path = config$path_ratio_last_post,
-                 f_validate = .validate_ratio_df)
+  purrr::partial(
+    .import_ratio_file,
+    path = config$path_ratio_last_post,
+    f_validate = .validate_ratio_df
+  )
 
 .import_ratio_last_scrape_possibly <-
   purrr::possibly(import_ratio_last_scrape, otherwise = NULL)
@@ -558,11 +568,12 @@ regenerate_user_info <-
 
 # convert_xxx ----
 # TODO: Implement plural version of `col_filt`?
-.convert_ratio_log_scrape_to_last_file <-
+.convert_ratio_log_scrape_to_file <-
   function(data,
            col_grp = "user",
            col_sort = "created_at",
            col_filt = "ratio",
+           how = c("desc", "asc"),
            ...,
            verbose = config$verbose_file) {
     stopifnot(is.character(col_grp),
@@ -571,6 +582,7 @@ regenerate_user_info <-
     stopifnot(any(col_grp == names(data)),
               any(col_sort == names(data)),
               any(col_filt == names(data)))
+    how <- match.arg(how)
     col_grp_sym <- sym(col_grp)
     col_sort_sym <- sym(col_sort)
     col_filt_sym <- sym(col_filt)
@@ -582,8 +594,10 @@ regenerate_user_info <-
     if (nrow(res) == 0L) {
       if (verbose) {
         msg <-
-          sprintf("No records to return in \"last\" file because is.na(`%s`) == TRUE.",
-                  col_filt)
+          sprintf(
+            "No records to return in \"last\" file because is.na(`%s`) == TRUE.",
+            col_filt
+          )
         message(msg)
       }
       return(res)
@@ -594,16 +608,36 @@ regenerate_user_info <-
       group_by(!!col_grp_sym) %>%
       arrange(desc(!!col_sort_sym), .by_group = TRUE) %>%
       slice(1) %>%
-      ungroup() %>%
-      arrange(!!col_grp_sym, desc(!!col_sort_sym))
+      ungroup()
+
+    # Note: [+-]`xtfrm()` could be used here somehow. (`desc()` is equivalent
+    # to `-xtfrm()`.
+    if(how == "desc") {
+      res <-
+        res %>%
+        arrange(!!col_grp_sym, desc(!!col_sort_sym))
+    } else if (how == "asc") {
+      res <-
+        res %>%
+        arrange(!!col_grp_sym, !!col_sort_sym)
+    }
     res
   }
+
+.convert_ratio_log_scrape_to_last_file <-
+  purrr::partial(.convert_ratio_log_scrape_to_file, how = "desc")
+
+.convert_ratio_log_scrape_to_first_file <-
+  purrr::partial(.convert_ratio_log_scrape_to_file, how = "asc")
 
 .convert_ratio_log_scrape_to_last_scrape <-
   purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "ratio")
 # # Note: Change `col_sort` to "timestamp_post" here?
 .convert_ratio_log_scrape_to_last_post <-
   purrr::partial(.convert_ratio_log_scrape_to_last_file, col_filt = "text_post")
+
+.convert_ratio_log_scrape_to_first_scrape <-
+  purrr::partial(.convert_ratio_log_scrape_to_first_file, col_filt = "ratio")
 
 # do_xxx ----
 .preprocess_do_action_ratio <-
