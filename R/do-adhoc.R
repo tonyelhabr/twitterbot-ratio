@@ -48,5 +48,10 @@
 #   export_ratio_log_scrape()
 
 # refresh_ratio_log_scrape ----
-# refresh_ratio_log_scrape()
+tweets_self <- .get_tweets_self()
+# refresh_ratio_log_scrape(tweets_self = tweets_self)
 
+rt_self <- tweets_self %>% filter(is_retweet)
+rt_self %>%
+  pull(status_id) %>%
+  purrr::walk(~rtweet::post_tweet(destroy_id = .x))

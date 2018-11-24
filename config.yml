@@ -53,7 +53,8 @@ default:
   post_status_id_sentinel: "-42"
 
   post_reply: true
-  post_retweet: true
+  post_quote: false
+  post_retweet: false
   post_favorite: true
 
   verbose_scrape: true
