@@ -6,22 +6,22 @@
 
 ..import_ratio_file_scrape_possibly <-
   function(method, data, ...) {
-    meaning <- .interprete_scrape_method()
+    meaning <- .interprete_scrape_method(method = method)
     f <- sprintf(".import_ratio_%s_scrape_possibly", meaning)
-    purrr::invoke(f, list(...))
+    purrr::invoke(f, ...)
   }
 
 
 ..convert_ratio_file_scrape <-
   function(method, data, ...) {
-    meaning <- .interprete_scrape_method()
+    meaning <- .interprete_scrape_method(method = method)
     f <- sprintf(".convert_ratio_log_scrape_to_%s_scrape", meaning)
     purrr::invoke(f, list(data = data, ...))
   }
 
 ..export_ratio_file_scrape <-
   function(method, data, ...) {
-    meaning <- .interprete_scrape_method()
+    meaning <- .interprete_scrape_method(method = method)
     f <- sprintf("export_ratio_%s_scrape", meaning)
     purrr::invoke(f, list(data = data, ...))
   }
@@ -30,7 +30,8 @@
   function(method,
            ratio_log_scrape,
            ratio_file_scrape = NULL,
-           ...) {
+           ...,
+           verbose = config$verbose_scrape) {
 
     if (is.null(ratio_file_scrape)) {
 
@@ -38,6 +39,7 @@
 
       if (is.null(ratio_file_scrape)) {
         if (verbose) {
+          meaning <- .interprete_scrape_method(method = method)
           msg <-
             sprintf("Creating `ratio_%s_scrape` file from `ratio_log_scrape`.", meaning)
           message(msg)
@@ -71,7 +73,7 @@
   function(method, ...) {
     # meaning <- .interprete_scrape_method()
     f <- sprintf(".get_tl_%s_possibly", method)
-    purrr::invoke(f, list(...))
+    purrr::invoke(f, ...)
   }
 
 .do_scrape_ratio <-
@@ -79,12 +81,8 @@
            method = c("since", "until"),
            ...,
            tl = NULL,
-           # id = NULL,
-           # id = NULL,
            id = NULL,
            ratio_log_scrape = NULL,
-           # ratio_last_scrape = NULL,
-           # ratio_first_scrape = NULL,
            ratio_file_scrape = NULL,
            cache = config$tl_cache,
            sentinel = config$scrape_reply_sentinel,
@@ -101,10 +99,10 @@
 
     # message(rep("-", getOption("width")))
     # message(rep("-", 80L))
-    browser()
 
     .validate_user_scalar(user)
     method <- match.arg(method)
+    message(method)
     # meaning <- .interprete_scrape_method(method)
 
     if (is.null(ratio_log_scrape)) {
@@ -124,7 +122,6 @@
 
     # browser()
     if (is.null(tl)) {
-
       ratio_file_scrape <-
         ..import_ratio_file_scrape(
           method = method,
@@ -222,31 +219,33 @@
       }
     }
 
-    ratio_log_scrape_export <-
+    ratio_scrape <-
       reply %>%
       .add_ratio_cols_at() %>%
       .add_timestamp_scrape_col_at() %>%
       .add_score_cols_at() %>%
       arrange(created_at)
 
-    path_ratio_log_scrape <- export_ratio_log_scrape_scrape(ratio_log_scrape_export)
-
-    ratio_log_bind <-
+    browser()
+    ratio_log_scrape_export <-
       bind_rows(
-        ratio_file_scrape,
-        ratio_log_scrape_export
+        ratio_log_scrape,
+        ratio_scrape
       )
+
+    path_ratio_log_scrape <-
+      export_ratio_log_scrape_scrape(ratio_log_scrape_export)
 
     ratio_file_scrape_export <-
       ..convert_ratio_file_scrape(
         method = method,
-        data = ratio_log_bind
+        data = ratio_log_scrape_export
       )
 
     path_ratio_file_scrape <-
       ..export_ratio_file_scrape(
         method = method,
-        data = ratio_file_scrape
+        data = ratio_scrape
       )
 
     invisible(reply)

@@ -5,6 +5,7 @@
   function(f_do,
            f_get_user,
            user = NULL,
+           method = "since",
            ...,
            path = NULL,
            backup = TRUE,
@@ -29,12 +30,13 @@
       pb <- NULL
     }
     .f <- function(.user, ..., .pb = NULL) {
-      f_do(user = .user, ...)
+      f_do(user = .user, method = method, ...)
+      # f_do(...)
       if (!is.null(.pb)) {
         .pb$tick()
       }
     }
-    purrr::walk(user, ~ .f(.user = .x, ..., .pb = pb))
+    purrr::pwalk(user, ~ .f(user = .x, ..., .pb = pb))
   }
 
 # Note: Not using `purrr::partial()` here so that `user` can still be specified.
@@ -43,12 +45,14 @@ do_scrape_ratio_all <-
            f_get_user = get_user_toscrape,
            user = NULL,
            path = config$path_ratio_log_scrape,
+           method = "since",
            ...) {
     .do_action_ratio_all(
       f_do = f_do,
       f_get_user = f_get_user,
       user = user,
       path = path,
+      method = method,
       ...
     )
   }
@@ -58,12 +62,14 @@ do_post_ratio_all <-
            f_get_user = get_user_topost,
            user = NULL,
            path = config$path_ratio_log_scrape,
+           method = NULL,
            ...) {
     .do_action_ratio_all(
       f_do = f_do,
       f_get_user = f_get_user,
       user = user,
       path = config$path_ratio_log_scrape,
+      method = method,
       ...
     )
   }

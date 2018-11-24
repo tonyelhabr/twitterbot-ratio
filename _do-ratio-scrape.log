@@ -1,0 +1,888 @@
+Error in curl::curl_fetch_memory(url, handle = handle) : 
+  Timeout was reached: Resolving timed out after 10000 milliseconds
+Calls: source ... request_fetch -> request_fetch.write_memory -> <Anonymous> -> .Call
+Execution halted
+Waiting for authentication in browser...
+Press Esc/Ctrl + C to abort
+Please point your browser to the following url: 
+https://api.twitter.com/oauth/authenticate?oauth_token=0oizRQAAAAAA86P8AAABZzvP0_E&permission=read
+
+
+Execution halted
+NOT interactive!
+Waiting for authentication in browser...
+Press Esc/Ctrl + C to abort
+Please point your browser to the following url: 
+https://api.twitter.com/oauth/authenticate?oauth_token=-38XugAAAAAA86P8AAABZzv4RwU&permission=read
+Error in FUN(X[[i]], ...) : 
+  R/functions/functions-_secret.R:10:7: unexpected symbol
+9:       access_secret = "NzMug5p1xhtkcX9JGMjMD6Oc6nPFxDupp77uaxRCWJUfD"
+10:       consumer_key
+          ^
+Calls: source ... withVisible -> eval -> eval -> sapply -> lapply -> FUN
+Execution halted
+NOT interactive!
+********************************************************************************
+Started script at 2018-11-22 09:42:34.
+
+Getting timeline for "RealSkipBayless" since last evaluated tweet: 1065430002647261184
+Evaluating 1 tweet(s) for "RealSkipBayless".
+
+Getting timeline for "stephenasmith" since last evaluated tweet: 1065055444446507008
+Evaluating 6 tweet(s) for "stephenasmith".
+
+Getting timeline for "NateSilver538" since last evaluated tweet: 1064962216745754625
+Evaluating 2 tweet(s) for "NateSilver538".
+
+Getting timeline for "bomani_jones" since last evaluated tweet: 1065002905810407426
+Evaluating 3 tweet(s) for "bomani_jones".
+
+Getting timeline for "BillSimmons" since last evaluated tweet: 1065087578137739265
+Evaluating 9 tweet(s) for "BillSimmons".
+
+Getting timeline for "PFTCommenter" since last evaluated tweet: 1065057823858614272
+Evaluating 4 tweet(s) for "PFTCommenter".
+
+Getting timeline for "darrenrovell" since last evaluated tweet: 1065066817826242560
+Evaluating 8 tweet(s) for "darrenrovell".
+
+Getting timeline for "WhitlockJason" since last evaluated tweet: 1065020603688640512
+Did not find any tweets for "WhitlockJason".
+
+Getting timeline for "richarddeitsch" since last evaluated tweet: 1065093006317867008
+Evaluating 12 tweet(s) for "richarddeitsch".
+
+Getting timeline for "jemelehill" since last evaluated tweet: 1065076882016628736
+Evaluating 5 tweet(s) for "jemelehill".
+
+Getting timeline for "mcuban" since last evaluated tweet: 1064653750193848321
+Something went wrong when retrieving tweets for "mcuban".
+
+Getting timeline for "bykevinclark" since last evaluated tweet: 1064928019918274566
+Evaluating 1 tweet(s) for "bykevinclark".
+
+Getting timeline for "DannyBKelly" since last evaluated tweet: 1064735296967720960
+Evaluating 1 tweet(s) for "DannyBKelly".
+
+Getting timeline for "minakimes" since last evaluated tweet: 1065011538921025537
+Evaluating 4 tweet(s) for "minakimes".
+
+Getting timeline for "BarstoolBigCat" since last evaluated tweet: 1064748184726118400
+Evaluating 28 tweet(s) for "BarstoolBigCat".
+
+Getting timeline for "hen_ease" since last evaluated tweet: 1064753054044602368
+Evaluating 14 tweet(s) for "hen_ease".
+
+Getting timeline for "katienolan" since last evaluated tweet: 1064804500689436672
+Evaluating 5 tweet(s) for "katienolan".
+
+Getting timeline for "SIChrisMannix" since last evaluated tweet: 1064708154871767045
+Evaluating 29 tweet(s) for "SIChrisMannix".
+
+Getting timeline for "HowardBeck" since last evaluated tweet: 1064748334391455744
+Evaluating 16 tweet(s) for "HowardBeck".
+
+Getting timeline for "ShannonSharpe" since last evaluated tweet: 1064744364599984128
+Evaluating 16 tweet(s) for "ShannonSharpe".
+
+Getting timeline for "Chris_Broussard" since last evaluated tweet: 1063890400430063616
+Evaluating 3 tweet(s) for "Chris_Broussard".
+
+Getting timeline for "SheaSerrano" since last evaluated tweet: 1064746581591826432
+Evaluating 90 tweet(s) for "SheaSerrano".
+
+Getting timeline for "Stephania_ESPN" since last evaluated tweet: 1064683166156406788
+Evaluating 5 tweet(s) for "Stephania_ESPN".
+
+Getting timeline for "MatthewBerryTMR" since last evaluated tweet: 1064745129221791744
+Evaluating 15 tweet(s) for "MatthewBerryTMR".
+
+Getting timeline for "FieldYates" since last evaluated tweet: 1064744970249216001
+Evaluating 21 tweet(s) for "FieldYates".
+
+Getting timeline for "RobParkerFS1" since last evaluated tweet: 1064740753845284864
+Evaluating 7 tweet(s) for "RobParkerFS1".
+
+Getting timeline for "criscarter80" since last evaluated tweet: 1064809640964354048
+Evaluating 1 tweet(s) for "criscarter80".
+
+Getting timeline for "getnickwright" since last evaluated tweet: 1064740057775513600
+Evaluating 4 tweet(s) for "getnickwright".
+
+Getting timeline for "markschlereth" since last evaluated tweet: 1064742219804884993
+Evaluating 8 tweet(s) for "markschlereth".
+
+Getting timeline for "Buck" since last evaluated tweet: 1064346699806588929
+Something went wrong when retrieving tweets for "Buck".
+
+Getting timeline for "TroyAikman" since last evaluated tweet: 1064683852763996160
+Evaluating 1 tweet(s) for "TroyAikman".
+
+Getting timeline for "MikePereira" since last evaluated tweet: 1064701350196346880
+Evaluating 1 tweet(s) for "MikePereira".
+
+Getting timeline for "ErinAndrews" since last evaluated tweet: 1064615212991401984
+Evaluating 4 tweet(s) for "ErinAndrews".
+
+Getting timeline for "GottliebShow" since last evaluated tweet: 1064748932415320064
+Evaluating 25 tweet(s) for "GottliebShow".
+
+Getting timeline for "Coach_Leach" since last evaluated tweet: 1064375914685915136
+Did not find any tweets for "Coach_Leach".
+
+Getting timeline for "ChrisBHaynes" since last evaluated tweet: 1064576250507812865
+Evaluating 3 tweet(s) for "ChrisBHaynes".
+
+Getting timeline for "wojespn" since last evaluated tweet: 1064676730676355074
+Evaluating 3 tweet(s) for "wojespn".
+
+Getting timeline for "RicBucher" since last evaluated tweet: 1064715377580498944
+Evaluating 7 tweet(s) for "RicBucher".
+
+Getting timeline for "MarcJSpearsESPN" since last evaluated tweet: 1064762203914493952
+Evaluating 3 tweet(s) for "MarcJSpearsESPN".
+
+Getting timeline for "McShay13" since last evaluated tweet: 1063590685289455616
+Evaluating 2 tweet(s) for "McShay13".
+
+Getting timeline for "MelKiperESPN" since last evaluated tweet: 1062773659637559304
+Something went wrong when retrieving tweets for "MelKiperESPN".
+
+Getting timeline for "IzGutierrez" since last evaluated tweet: 1060616135337525250
+Evaluating 2 tweet(s) for "IzGutierrez".
+
+Getting timeline for "MarkJackson13" since last evaluated tweet: 1063215736456282113
+No tweets to evaluate for "MarkJackson13".
+
+Getting timeline for "RealMikeWilbon" since last evaluated tweet: 1064365073005780993
+Did not find any tweets for "RealMikeWilbon".
+
+Getting timeline for "WindhorstESPN" since last evaluated tweet: 1063178044238688256
+Evaluating 2 tweet(s) for "WindhorstESPN".
+
+Getting timeline for "davidaldridgedc" since last evaluated tweet: 1064575489417854982
+Evaluating 15 tweet(s) for "davidaldridgedc".
+
+Getting timeline for "kevinarnovitz" since last evaluated tweet: 1062783522006478848
+Did not find any tweets for "kevinarnovitz".
+
+Getting timeline for "sheridanhoops" since last evaluated tweet: 1064661113839726592
+Evaluating 6 tweet(s) for "sheridanhoops".
+
+Getting timeline for "ReggieMillerTNT" since last evaluated tweet: 1057829484831793152
+Evaluating 1 tweet(s) for "ReggieMillerTNT".
+
+Getting timeline for "chadfordinsider" since last evaluated tweet: 881180847251931136
+Something went wrong when retrieving tweets for "chadfordinsider".
+
+Getting timeline for "TheSteinLine" since last evaluated tweet: 1064712375381762053
+Evaluating 12 tweet(s) for "TheSteinLine".
+
+Getting last 100 tweets from timeline for "RoyceWebb".
+Evaluating 1 tweet(s) for "RoyceWebb".
+
+Getting timeline for "jadande" since last evaluated tweet: 1064743456176771072
+Evaluating 3 tweet(s) for "jadande".
+
+Getting timeline for "mcten" since last evaluated tweet: 1064619577298968576
+Evaluating 9 tweet(s) for "mcten".
+
+Getting timeline for "JalenRose" since last evaluated tweet: 1064160908128264192
+Evaluating 3 tweet(s) for "JalenRose".
+
+Getting timeline for "SHAQ" since last evaluated tweet: 1063840255978209280
+Evaluating 1 tweet(s) for "SHAQ".
+
+Getting timeline for "dmorey" since last evaluated tweet: 1063900491011301376
+Did not find any tweets for "dmorey".
+
+Getting timeline for "EdwerderRFA" since last evaluated tweet: 1064795410848346113
+Evaluating 43 tweet(s) for "EdwerderRFA".
+
+Getting timeline for "realjerryjones" since last evaluated tweet: 64075423365079040
+Something went wrong when retrieving tweets for "realjerryjones".
+
+Getting timeline for "johnelway" since last evaluated tweet: 1032705436061818880
+Something went wrong when retrieving tweets for "johnelway".
+
+Getting timeline for "TimTebow" since last evaluated tweet: 1064211775581839365
+Evaluating 3 tweet(s) for "TimTebow".
+
+Getting timeline for "TonyDungy" since last evaluated tweet: 1064741370257178624
+Evaluating 2 tweet(s) for "TonyDungy".
+
+Getting timeline for "JerryRice" since last evaluated tweet: 1064648575173312512
+Evaluating 2 tweet(s) for "JerryRice".
+
+Getting timeline for "MichaelVick" since last evaluated tweet: 1064191642427695106
+Something went wrong when retrieving tweets for "MichaelVick".
+
+Getting timeline for "FO_ASchatz" since last evaluated tweet: 1064745083277385728
+Evaluating 6 tweet(s) for "FO_ASchatz".
+
+Getting timeline for "DeionSanders" since last evaluated tweet: 1064651451409055744
+Evaluating 3 tweet(s) for "DeionSanders".
+
+Getting timeline for "JayGlazer" since last evaluated tweet: 1064741611198791686
+Evaluating 2 tweet(s) for "JayGlazer".
+
+Getting last 100 tweets from timeline for "Adam Schefter".
+Evaluating 30 tweet(s) for "Adam Schefter".
+
+Getting timeline for "nflcommish" since last evaluated tweet: 1063520162358415361
+Something went wrong when retrieving tweets for "nflcommish".
+
+Getting timeline for "peter_king" since last evaluated tweet: 1064705415852814336
+Evaluating 6 tweet(s) for "peter_king".
+
+Getting timeline for "wingoz" since last evaluated tweet: 1064838289226702848
+Evaluating 61 tweet(s) for "wingoz".
+
+Getting timeline for "mortreport" since last evaluated tweet: 1064569874192785410
+Did not find any tweets for "mortreport".
+
+Getting timeline for "merrilhoge" since last evaluated tweet: 1064269539687448581
+Evaluating 1 tweet(s) for "merrilhoge".
+
+Getting timeline for "AndrewBrandt" since last evaluated tweet: 1064746398854377477
+Evaluating 7 tweet(s) for "AndrewBrandt".
+
+Getting timeline for "SandoESPN" since last evaluated tweet: 1064760792594112513
+Evaluating 14 tweet(s) for "SandoESPN".
+
+Getting timeline for "treykerby" since last evaluated tweet: 1064736832875884544
+Evaluating 7 tweet(s) for "treykerby".
+
+Getting timeline for "haralabob" since last evaluated tweet: 1064686523633860609
+Evaluating 2 tweet(s) for "haralabob".
+
+Getting timeline for "WorldWideWob" since last evaluated tweet: 1064741581037682688
+Evaluating 22 tweet(s) for "WorldWideWob".
+
+Getting timeline for "DragonflyJonez" since last evaluated tweet: 1064716265632206849
+Evaluating 19 tweet(s) for "DragonflyJonez".
+
+Getting timeline for "mdotbrown" since last evaluated tweet: 1064636868497616896
+Evaluating 1 tweet(s) for "mdotbrown".
+
+Getting timeline for "talkhoops" since last evaluated tweet: 1064750556718067712
+Evaluating 26 tweet(s) for "talkhoops".
+
+Getting timeline for "jeskeets" since last evaluated tweet: 1064712994377134080
+Evaluating 23 tweet(s) for "jeskeets".
+
+Getting timeline for "TasMelas" since last evaluated tweet: 1064181418274824192
+Evaluating 6 tweet(s) for "TasMelas".
+
+Getting timeline for "netw3rk" since last evaluated tweet: 1064723659237994497
+Evaluating 7 tweet(s) for "netw3rk".
+
+Getting timeline for "DarthAmin" since last evaluated tweet: 1064721027979231232
+Evaluating 15 tweet(s) for "DarthAmin".
+
+Getting timeline for "NateDuncanNBA" since last evaluated tweet: 1064766679547371520
+Evaluating 6 tweet(s) for "NateDuncanNBA".
+
+Getting timeline for "ZachLowe_NBA" since last evaluated tweet: 1064702017195712512
+Evaluating 15 tweet(s) for "ZachLowe_NBA".
+
+Getting timeline for "teamziller" since last evaluated tweet: 1064556429284188161
+Evaluating 2 tweet(s) for "teamziller".
+
+Getting timeline for "HPbasketball" since last evaluated tweet: 1064765117856796672
+Evaluating 42 tweet(s) for "HPbasketball".
+
+Getting timeline for "JohnClaytonNFL" since last evaluated tweet: 1064697896228941825
+Did not find any tweets for "JohnClaytonNFL".
+
+Getting timeline for "billbarnwell" since last evaluated tweet: 1064749713415639040
+Evaluating 11 tweet(s) for "billbarnwell".
+
+Getting last 100 tweets from timeline for "SethParnow".
+Warning: 34 - Sorry, that page does not exist.
+Something went wrong when retrieving tweets for "SethParnow".
+
+Getting timeline for "SportsTVRatings" since last evaluated tweet: 1056922859715608576
+Something went wrong when retrieving tweets for "SportsTVRatings".
+
+Getting timeline for "StatsbyLopez" since last evaluated tweet: 1064750789506285568
+Evaluating 1 tweet(s) for "StatsbyLopez".
+
+Getting timeline for "Herring_NBA" since last evaluated tweet: 1064736980339212288
+Evaluating 22 tweet(s) for "Herring_NBA".
+
+Getting timeline for "WaltHickey" since last evaluated tweet: 1064746119308152833
+Evaluating 8 tweet(s) for "WaltHickey".
+
+Getting timeline for "BFawkesESPN" since last evaluated tweet: 1064700338941423617
+Evaluating 11 tweet(s) for "BFawkesESPN".
+
+Getting timeline for "notthefakeSVP" since last evaluated tweet: 1063902929550286848
+Evaluating 3 tweet(s) for "notthefakeSVP".
+
+Getting last 100 tweets from timeline for "RobertKlemko".
+Evaluating 24 tweet(s) for "RobertKlemko".
+
+Getting timeline for "skepticalsports" since last evaluated tweet: 1062801109796802560
+Did not find any tweets for "skepticalsports".
+
+Getting timeline for "robertmays" since last evaluated tweet: 1064821981990842368
+Evaluating 18 tweet(s) for "robertmays".
+
+Getting timeline for "tatefrazier" since last evaluated tweet: 1064744847595102208
+Evaluating 20 tweet(s) for "tatefrazier".
+
+Getting timeline for "JustinVerrier" since last evaluated tweet: 1064705276513673216
+Something went wrong when retrieving tweets for "JustinVerrier".
+
+Getting timeline for "stat_sam" since last evaluated tweet: 1055152221560676352
+Did not find any tweets for "stat_sam".
+
+Getting timeline for "SherwoodStrauss" since last evaluated tweet: 1064719773404000262
+Evaluating 7 tweet(s) for "SherwoodStrauss".
+
+Getting timeline for "michaelsmith" since last evaluated tweet: 1063081766561427456
+Evaluating 2 tweet(s) for "michaelsmith".
+
+Getting timeline for "CKlosterman" since last evaluated tweet: 1045035768194846720
+Did not find any tweets for "CKlosterman".
+
+Getting timeline for "ESPNLunardi" since last evaluated tweet: 1064674028307259392
+Evaluating 10 tweet(s) for "ESPNLunardi".
+
+Getting timeline for "outsidethenba" since last evaluated tweet: 1064710639594233856
+Evaluating 6 tweet(s) for "outsidethenba".
+
+Getting timeline for "espn_macmahon" since last evaluated tweet: 1064720001221967872
+Evaluating 5 tweet(s) for "espn_macmahon".
+
+Getting timeline for "DanHanzus" since last evaluated tweet: 1064745651408318465
+Evaluating 2 tweet(s) for "DanHanzus".
+
+Getting timeline for "MichelleDBeadle" since last evaluated tweet: 1063479934025326592
+Did not find any tweets for "MichelleDBeadle".
+
+Getting timeline for "kirkgoldsberry" since last evaluated tweet: 1064706916285337601
+Evaluating 3 tweet(s) for "kirkgoldsberry".
+
+Getting timeline for "DannyLeroux" since last evaluated tweet: 1064758631973904384
+Evaluating 25 tweet(s) for "DannyLeroux".
+
+Getting timeline for "smartfootball" since last evaluated tweet: 1064746375919878150
+Did not find any tweets for "smartfootball".
+
+Getting timeline for "ChrisWesseling" since last evaluated tweet: 1064798631411105793
+Evaluating 5 tweet(s) for "ChrisWesseling".
+
+Getting timeline for "StanfordSteve82" since last evaluated tweet: 1064760841109729282
+Evaluating 4 tweet(s) for "StanfordSteve82".
+
+Getting timeline for "Rachel__Nichols" since last evaluated tweet: 1064831122490703872
+Evaluating 17 tweet(s) for "Rachel__Nichols".
+
+Getting timeline for "KNegandhiESPN" since last evaluated tweet: 1064745703619141632
+Evaluating 9 tweet(s) for "KNegandhiESPN".
+
+Getting timeline for "KevinOConnorNBA" since last evaluated tweet: 1064551814840823808
+Evaluating 4 tweet(s) for "KevinOConnorNBA".
+
+Getting timeline for "richeisen" since last evaluated tweet: 1064772298475880448
+Evaluating 6 tweet(s) for "richeisen".
+
+Getting timeline for "chadmillman" since last evaluated tweet: 1064567528687587330
+Evaluating 5 tweet(s) for "chadmillman".
+
+Getting timeline for "Jpdabrams" since last evaluated tweet: 1064599679730688000
+Something went wrong when retrieving tweets for "Jpdabrams".
+
+Getting timeline for "CariChampion" since last evaluated tweet: 1064773849697251328
+Evaluating 11 tweet(s) for "CariChampion".
+
+Getting timeline for "BigWos" since last evaluated tweet: 1064675309457481728
+Evaluating 22 tweet(s) for "BigWos".
+
+Getting timeline for "ChrisRyan77" since last evaluated tweet: 1063263149489500160
+Did not find any tweets for "ChrisRyan77".
+
+Getting timeline for "greggrosenthal" since last evaluated tweet: 1064789789323362304
+Evaluating 2 tweet(s) for "greggrosenthal".
+
+Getting timeline for "MarcSesslerNFL" since last evaluated tweet: 1064758633135669249
+Evaluating 3 tweet(s) for "MarcSesslerNFL".
+
+Getting timeline for "beatingthebook" since last evaluated tweet: 1064745248075608064
+Evaluating 6 tweet(s) for "beatingthebook".
+
+Getting timeline for "TonyReali" since last evaluated tweet: 1064740984376999936
+Did not find any tweets for "TonyReali".
+
+Getting timeline for "tomhaberstroh" since last evaluated tweet: 1064704365036998657
+Evaluating 20 tweet(s) for "tomhaberstroh".
+
+Getting timeline for "kpelton" since last evaluated tweet: 1064741868259274752
+Evaluating 5 tweet(s) for "kpelton".
+
+Getting timeline for "Neil_Paine" since last evaluated tweet: 1062860400503463936
+Something went wrong when retrieving tweets for "Neil_Paine".
+
+Getting timeline for "kpatra" since last evaluated tweet: 1064745409535451139
+Evaluating 5 tweet(s) for "kpatra".
+
+Getting timeline for "MikePradaSBN" since last evaluated tweet: 1064745592298135552
+Evaluating 16 tweet(s) for "MikePradaSBN".
+
+Getting timeline for "ramonashelburne" since last evaluated tweet: 1064741829822672896
+Evaluating 1 tweet(s) for "ramonashelburne".
+
+Getting timeline for "djacoby" since last evaluated tweet: 1064743451978280960
+Evaluating 3 tweet(s) for "djacoby".
+
+Getting timeline for "PabloTorre" since last evaluated tweet: 1064743165842870272
+Evaluating 3 tweet(s) for "PabloTorre".
+
+Getting timeline for "drewmagary" since last evaluated tweet: 1064745884712349696
+Evaluating 15 tweet(s) for "drewmagary".
+
+Getting timeline for "megynkelly" since last evaluated tweet: 1064633560865353728
+No tweets to evaluate for "megynkelly".
+
+Getting timeline for "seanhannity" since last evaluated tweet: 1064709665550929921
+Evaluating 16 tweet(s) for "seanhannity".
+
+Getting timeline for "BillOReilly" since last evaluated tweet: 1064536671251763200
+Evaluating 12 tweet(s) for "BillOReilly".
+There were 50 or more warnings (use warnings() to see the first 50)
+Finished script at 2018-11-22 09:55:54.
+********************************************************************************
+NOT interactive!
+********************************************************************************
+Started script at 2018-11-23 05:30:30.
+
+Getting timeline for "RealSkipBayless" since last evaluated tweet: 1065439268443643906
+Evaluating 28 tweet(s) for "RealSkipBayless".
+
+Getting timeline for "stephenasmith" since last evaluated tweet: 1065398957801656320
+Evaluating 4 tweet(s) for "stephenasmith".
+
+Getting timeline for "NateSilver538" since last evaluated tweet: 1065413375696560133
+Evaluating 1 tweet(s) for "NateSilver538".
+
+Getting timeline for "bomani_jones" since last evaluated tweet: 1065334230660653058
+Something went wrong when retrieving tweets for "bomani_jones".
+
+Getting timeline for "BillSimmons" since last evaluated tweet: 1065439572564180997
+Evaluating 4 tweet(s) for "BillSimmons".
+
+Getting timeline for "PFTCommenter" since last evaluated tweet: 1065278819374899201
+Evaluating 6 tweet(s) for "PFTCommenter".
+
+Getting timeline for "darrenrovell" since last evaluated tweet: 1065442167370514434
+Evaluating 7 tweet(s) for "darrenrovell".
+
+Getting timeline for "WhitlockJason" since last evaluated tweet: 1065020603688640512
+No tweets to evaluate for "WhitlockJason".
+
+Getting timeline for "richarddeitsch" since last evaluated tweet: 1065439399788212224
+Evaluating 9 tweet(s) for "richarddeitsch".
+
+Getting timeline for "jemelehill" since last evaluated tweet: 1065404851687841792
+Evaluating 8 tweet(s) for "jemelehill".
+
+Getting timeline for "mcuban" since last evaluated tweet: 1064653750193848321
+Something went wrong when retrieving tweets for "mcuban".
+
+Getting timeline for "bykevinclark" since last evaluated tweet: 1065384659436093440
+No tweets to evaluate for "bykevinclark".
+
+Getting timeline for "DannyBKelly" since last evaluated tweet: 1065381937345228800
+Did not find any tweets for "DannyBKelly".
+
+Getting timeline for "minakimes" since last evaluated tweet: 1065398618650140672
+Evaluating 4 tweet(s) for "minakimes".
+
+Getting timeline for "BarstoolBigCat" since last evaluated tweet: 1065449008175464449
+Evaluating 37 tweet(s) for "BarstoolBigCat".
+
+Getting timeline for "hen_ease" since last evaluated tweet: 1065438197675696128
+Evaluating 2 tweet(s) for "hen_ease".
+
+Getting timeline for "katienolan" since last evaluated tweet: 1065391617895477248
+Evaluating 1 tweet(s) for "katienolan".
+
+Getting timeline for "SIChrisMannix" since last evaluated tweet: 1065444469443579904
+Evaluating 1 tweet(s) for "SIChrisMannix".
+
+Getting timeline for "HowardBeck" since last evaluated tweet: 1065413511780728832
+Evaluating 4 tweet(s) for "HowardBeck".
+
+Getting timeline for "ShannonSharpe" since last evaluated tweet: 1065443306908221440
+Evaluating 13 tweet(s) for "ShannonSharpe".
+
+Getting timeline for "Chris_Broussard" since last evaluated tweet: 1065278661492801536
+Evaluating 1 tweet(s) for "Chris_Broussard".
+
+Getting timeline for "SheaSerrano" since last evaluated tweet: 1065447130997944320
+Evaluating 26 tweet(s) for "SheaSerrano".
+
+Getting timeline for "Stephania_ESPN" since last evaluated tweet: 1065419516895797248
+Did not find any tweets for "Stephania_ESPN".
+
+Getting timeline for "MatthewBerryTMR" since last evaluated tweet: 1065389020069404672
+Evaluating 8 tweet(s) for "MatthewBerryTMR".
+
+Getting timeline for "FieldYates" since last evaluated tweet: 1065396991885262855
+Evaluating 6 tweet(s) for "FieldYates".
+
+Getting timeline for "RobParkerFS1" since last evaluated tweet: 1065380201452826624
+Evaluating 1 tweet(s) for "RobParkerFS1".
+
+Getting timeline for "criscarter80" since last evaluated tweet: 1065169427258331136
+Evaluating 1 tweet(s) for "criscarter80".
+
+Getting timeline for "getnickwright" since last evaluated tweet: 1065416314792095750
+No tweets to evaluate for "getnickwright".
+
+Getting timeline for "markschlereth" since last evaluated tweet: 1065435720586682369
+Evaluating 14 tweet(s) for "markschlereth".
+
+Getting timeline for "Buck" since last evaluated tweet: 1064346699806588929
+Something went wrong when retrieving tweets for "Buck".
+
+Getting timeline for "TroyAikman" since last evaluated tweet: 1064922410829398016
+Evaluating 1 tweet(s) for "TroyAikman".
+
+Getting timeline for "MikePereira" since last evaluated tweet: 1064957452896989184
+Evaluating 4 tweet(s) for "MikePereira".
+
+Getting timeline for "ErinAndrews" since last evaluated tweet: 1065118581661126657
+Evaluating 2 tweet(s) for "ErinAndrews".
+
+Getting timeline for "GottliebShow" since last evaluated tweet: 1065399318532640768
+Evaluating 13 tweet(s) for "GottliebShow".
+
+Getting timeline for "Coach_Leach" since last evaluated tweet: 1064375914685915136
+Did not find any tweets for "Coach_Leach".
+
+Getting timeline for "ChrisBHaynes" since last evaluated tweet: 1065272852297932801
+Did not find any tweets for "ChrisBHaynes".
+
+Getting timeline for "wojespn" since last evaluated tweet: 1065397330608877568
+Did not find any tweets for "wojespn".
+
+Getting timeline for "RicBucher" since last evaluated tweet: 1065414360590241792
+Evaluating 2 tweet(s) for "RicBucher".
+
+Getting timeline for "MarcJSpearsESPN" since last evaluated tweet: 1065073577425199105
+Evaluating 3 tweet(s) for "MarcJSpearsESPN".
+
+Getting timeline for "McShay13" since last evaluated tweet: 1065266682887843841
+No tweets to evaluate for "McShay13".
+
+Getting timeline for "MelKiperESPN" since last evaluated tweet: 1062773659637559304
+Something went wrong when retrieving tweets for "MelKiperESPN".
+
+Getting timeline for "IzGutierrez" since last evaluated tweet: 1065097484211507201
+Evaluating 1 tweet(s) for "IzGutierrez".
+
+Getting timeline for "MarkJackson13" since last evaluated tweet: 1063215736456282113
+Evaluating 1 tweet(s) for "MarkJackson13".
+
+Getting timeline for "RealMikeWilbon" since last evaluated tweet: 1064365073005780993
+Did not find any tweets for "RealMikeWilbon".
+
+Getting timeline for "WindhorstESPN" since last evaluated tweet: 1064950276233273344
+Did not find any tweets for "WindhorstESPN".
+
+Getting timeline for "davidaldridgedc" since last evaluated tweet: 1065448265116774401
+Evaluating 5 tweet(s) for "davidaldridgedc".
+
+Getting timeline for "kevinarnovitz" since last evaluated tweet: 1062783522006478848
+Did not find any tweets for "kevinarnovitz".
+
+Getting timeline for "sheridanhoops" since last evaluated tweet: 1065405219264172034
+Evaluating 7 tweet(s) for "sheridanhoops".
+
+Getting timeline for "ReggieMillerTNT" since last evaluated tweet: 1064881713405280256
+Something went wrong when retrieving tweets for "ReggieMillerTNT".
+
+Getting timeline for "chadfordinsider" since last evaluated tweet: 881180847251931136
+Something went wrong when retrieving tweets for "chadfordinsider".
+
+Getting timeline for "TheSteinLine" since last evaluated tweet: 1065363335032516609
+Evaluating 4 tweet(s) for "TheSteinLine".
+
+Getting last 100 tweets from timeline for "RoyceWebb".
+Evaluating 1 tweet(s) for "RoyceWebb".
+
+Getting timeline for "jadande" since last evaluated tweet: 1065250658746580994
+Evaluating 2 tweet(s) for "jadande".
+
+Getting timeline for "mcten" since last evaluated tweet: 1065435176690429953
+Evaluating 1 tweet(s) for "mcten".
+
+Getting timeline for "JalenRose" since last evaluated tweet: 1065328603569815557
+Evaluating 8 tweet(s) for "JalenRose".
+
+Getting timeline for "SHAQ" since last evaluated tweet: 1065273905848483840
+Something went wrong when retrieving tweets for "SHAQ".
+
+Getting timeline for "dmorey" since last evaluated tweet: 1063900491011301376
+Evaluating 1 tweet(s) for "dmorey".
+
+Getting timeline for "EdwerderRFA" since last evaluated tweet: 1065427903679205378
+Evaluating 17 tweet(s) for "EdwerderRFA".
+
+Getting timeline for "realjerryjones" since last evaluated tweet: 64075423365079040
+Something went wrong when retrieving tweets for "realjerryjones".
+
+Getting timeline for "johnelway" since last evaluated tweet: 1032705436061818880
+Something went wrong when retrieving tweets for "johnelway".
+
+Getting timeline for "TimTebow" since last evaluated tweet: 1065394811002384385
+Something went wrong when retrieving tweets for "TimTebow".
+
+Getting timeline for "TonyDungy" since last evaluated tweet: 1065433378873331713
+Evaluating 6 tweet(s) for "TonyDungy".
+
+Getting timeline for "JerryRice" since last evaluated tweet: 1065273290925629446
+Evaluating 2 tweet(s) for "JerryRice".
+
+Getting timeline for "MichaelVick" since last evaluated tweet: 1064191642427695106
+Evaluating 1 tweet(s) for "MichaelVick".
+
+Getting timeline for "FO_ASchatz" since last evaluated tweet: 1065002408391188481
+Evaluating 1 tweet(s) for "FO_ASchatz".
+
+Getting timeline for "DeionSanders" since last evaluated tweet: 1065358895974137857
+Evaluating 4 tweet(s) for "DeionSanders".
+
+Getting timeline for "JayGlazer" since last evaluated tweet: 1065352773250670592
+Evaluating 1 tweet(s) for "JayGlazer".
+
+Getting last 100 tweets from timeline for "Adam Schefter".
+Evaluating 30 tweet(s) for "Adam Schefter".
+
+Getting timeline for "nflcommish" since last evaluated tweet: 1063520162358415361
+Something went wrong when retrieving tweets for "nflcommish".
+
+Getting timeline for "peter_king" since last evaluated tweet: 1065340994089091073
+Evaluating 4 tweet(s) for "peter_king".
+
+Getting timeline for "wingoz" since last evaluated tweet: 1065417902927564800
+Evaluating 34 tweet(s) for "wingoz".
+
+Getting timeline for "mortreport" since last evaluated tweet: 1064569874192785410
+Evaluating 2 tweet(s) for "mortreport".
+
+Getting timeline for "merrilhoge" since last evaluated tweet: 1064962489060864007
+Evaluating 1 tweet(s) for "merrilhoge".
+
+Getting timeline for "AndrewBrandt" since last evaluated tweet: 1065305085117427715
+Evaluating 5 tweet(s) for "AndrewBrandt".
+
+Getting timeline for "SandoESPN" since last evaluated tweet: 1065305425992650752
+Evaluating 4 tweet(s) for "SandoESPN".
+
+Getting timeline for "treykerby" since last evaluated tweet: 1065441049970176000
+Did not find any tweets for "treykerby".
+
+Getting timeline for "haralabob" since last evaluated tweet: 1065004739119775744
+Did not find any tweets for "haralabob".
+
+Getting timeline for "WorldWideWob" since last evaluated tweet: 1065450441197146112
+Evaluating 7 tweet(s) for "WorldWideWob".
+
+Getting timeline for "DragonflyJonez" since last evaluated tweet: 1065369087180722177
+Evaluating 16 tweet(s) for "DragonflyJonez".
+
+Getting timeline for "mdotbrown" since last evaluated tweet: 1065044982359179264
+Evaluating 1 tweet(s) for "mdotbrown".
+
+Getting timeline for "talkhoops" since last evaluated tweet: 1065444654609399808
+Evaluating 38 tweet(s) for "talkhoops".
+
+Getting timeline for "jeskeets" since last evaluated tweet: 1065440147381149697
+Evaluating 6 tweet(s) for "jeskeets".
+
+Getting timeline for "TasMelas" since last evaluated tweet: 1065439091104333829
+Evaluating 1 tweet(s) for "TasMelas".
+
+Getting timeline for "netw3rk" since last evaluated tweet: 1065439508567474177
+Evaluating 6 tweet(s) for "netw3rk".
+
+Getting timeline for "DarthAmin" since last evaluated tweet: 1065392858084007936
+Evaluating 3 tweet(s) for "DarthAmin".
+
+Getting timeline for "NateDuncanNBA" since last evaluated tweet: 1065403328656564225
+Evaluating 2 tweet(s) for "NateDuncanNBA".
+
+Getting timeline for "ZachLowe_NBA" since last evaluated tweet: 1065269908194373633
+Evaluating 2 tweet(s) for "ZachLowe_NBA".
+
+Getting timeline for "teamziller" since last evaluated tweet: 1065236023494565888
+Evaluating 1 tweet(s) for "teamziller".
+
+Getting timeline for "HPbasketball" since last evaluated tweet: 1065443449946734592
+Evaluating 25 tweet(s) for "HPbasketball".
+
+Getting timeline for "JohnClaytonNFL" since last evaluated tweet: 1064697896228941825
+Did not find any tweets for "JohnClaytonNFL".
+
+Getting timeline for "billbarnwell" since last evaluated tweet: 1065320969454051328
+Evaluating 12 tweet(s) for "billbarnwell".
+
+Getting last 100 tweets from timeline for "SethPartnow".
+Evaluating 24 tweet(s) for "SethPartnow".
+
+Getting timeline for "SportsTVRatings" since last evaluated tweet: 1056922859715608576
+Something went wrong when retrieving tweets for "SportsTVRatings".
+
+Getting timeline for "StatsbyLopez" since last evaluated tweet: 1064928443949899777
+Did not find any tweets for "StatsbyLopez".
+
+Getting timeline for "Herring_NBA" since last evaluated tweet: 1065449622607417344
+Evaluating 6 tweet(s) for "Herring_NBA".
+
+Getting timeline for "WaltHickey" since last evaluated tweet: 1065327708031336448
+Evaluating 2 tweet(s) for "WaltHickey".
+
+Getting timeline for "BFawkesESPN" since last evaluated tweet: 1065417041069441030
+Evaluating 5 tweet(s) for "BFawkesESPN".
+
+Getting timeline for "notthefakeSVP" since last evaluated tweet: 1065073128261455872
+Evaluating 3 tweet(s) for "notthefakeSVP".
+
+Getting timeline for "RobertKlemko" since last evaluated tweet: 1065037640150376448
+Evaluating 1 tweet(s) for "RobertKlemko".
+
+Getting timeline for "skepticalsports" since last evaluated tweet: 1062801109796802560
+Did not find any tweets for "skepticalsports".
+
+Getting timeline for "robertmays" since last evaluated tweet: 1065338988247027712
+Evaluating 26 tweet(s) for "robertmays".
+
+Getting timeline for "tatefrazier" since last evaluated tweet: 1065431650295640064
+Evaluating 9 tweet(s) for "tatefrazier".
+
+Getting timeline for "JustinVerrier" since last evaluated tweet: 1064705276513673216
+Something went wrong when retrieving tweets for "JustinVerrier".
+
+Getting timeline for "stat_sam" since last evaluated tweet: 1055152221560676352
+Did not find any tweets for "stat_sam".
+
+Getting timeline for "SherwoodStrauss" since last evaluated tweet: 1065438243909382144
+Evaluating 2 tweet(s) for "SherwoodStrauss".
+
+Getting timeline for "michaelsmith" since last evaluated tweet: 1064954985119719424
+Did not find any tweets for "michaelsmith".
+
+Getting timeline for "CKlosterman" since last evaluated tweet: 1045035768194846720
+Did not find any tweets for "CKlosterman".
+
+Getting timeline for "ESPNLunardi" since last evaluated tweet: 1065443232258101248
+Evaluating 1 tweet(s) for "ESPNLunardi".
+
+Getting timeline for "outsidethenba" since last evaluated tweet: 1065439041779392512
+Evaluating 1 tweet(s) for "outsidethenba".
+
+Getting timeline for "espn_macmahon" since last evaluated tweet: 1065437189390127105
+Evaluating 3 tweet(s) for "espn_macmahon".
+
+Getting timeline for "DanHanzus" since last evaluated tweet: 1065329200809144320
+Evaluating 2 tweet(s) for "DanHanzus".
+
+Getting timeline for "MichelleDBeadle" since last evaluated tweet: 1063479934025326592
+Did not find any tweets for "MichelleDBeadle".
+
+Getting timeline for "kirkgoldsberry" since last evaluated tweet: 1065315677052067840
+Evaluating 1 tweet(s) for "kirkgoldsberry".
+
+Getting timeline for "DannyLeroux" since last evaluated tweet: 1065446420725919744
+Evaluating 17 tweet(s) for "DannyLeroux".
+
+Getting timeline for "smartfootball" since last evaluated tweet: 1064746375919878150
+Did not find any tweets for "smartfootball".
+
+Getting timeline for "ChrisWesseling" since last evaluated tweet: 1064994162288676864
+Evaluating 2 tweet(s) for "ChrisWesseling".
+
+Getting timeline for "StanfordSteve82" since last evaluated tweet: 1065360681065697280
+Evaluating 1 tweet(s) for "StanfordSteve82".
+
+Getting timeline for "Rachel__Nichols" since last evaluated tweet: 1065442854334533637
+Evaluating 5 tweet(s) for "Rachel__Nichols".
+
+Getting timeline for "KNegandhiESPN" since last evaluated tweet: 1065436891368034304
+Evaluating 2 tweet(s) for "KNegandhiESPN".
+
+Getting timeline for "KevinOConnorNBA" since last evaluated tweet: 1065440011607334913
+Evaluating 1 tweet(s) for "KevinOConnorNBA".
+
+Getting timeline for "richeisen" since last evaluated tweet: 1065358845269094401
+Evaluating 11 tweet(s) for "richeisen".
+
+Getting timeline for "chadmillman" since last evaluated tweet: 1065241004251521024
+Did not find any tweets for "chadmillman".
+
+Getting timeline for "Jpdabrams" since last evaluated tweet: 1064599679730688000
+Something went wrong when retrieving tweets for "Jpdabrams".
+
+Getting timeline for "CariChampion" since last evaluated tweet: 1065402248061059073
+Did not find any tweets for "CariChampion".
+
+Getting timeline for "BigWos" since last evaluated tweet: 1065413897434398720
+Evaluating 10 tweet(s) for "BigWos".
+
+Getting timeline for "ChrisRyan77" since last evaluated tweet: 1063263149489500160
+Did not find any tweets for "ChrisRyan77".
+
+Getting timeline for "greggrosenthal" since last evaluated tweet: 1065305844361814016
+Evaluating 3 tweet(s) for "greggrosenthal".
+
+Getting timeline for "MarcSesslerNFL" since last evaluated tweet: 1065049639697604608
+Evaluating 1 tweet(s) for "MarcSesslerNFL".
+
+Getting timeline for "beatingthebook" since last evaluated tweet: 1065323289705275392
+No tweets to evaluate for "beatingthebook".
+
+Getting timeline for "TonyReali" since last evaluated tweet: 1064740984376999936
+Did not find any tweets for "TonyReali".
+
+Getting timeline for "tomhaberstroh" since last evaluated tweet: 1065368897250037761
+Evaluating 1 tweet(s) for "tomhaberstroh".
+
+Getting timeline for "kpelton" since last evaluated tweet: 1065331457533521920
+Evaluating 1 tweet(s) for "kpelton".
+
+Getting timeline for "Neil_Paine" since last evaluated tweet: 1062860400503463936
+Something went wrong when retrieving tweets for "Neil_Paine".
+
+Getting timeline for "kpatra" since last evaluated tweet: 1065322727681286150
+Something went wrong when retrieving tweets for "kpatra".
+
+Getting timeline for "MikePradaSBN" since last evaluated tweet: 1065450209826783232
+Did not find any tweets for "MikePradaSBN".
+
+Getting timeline for "ramonashelburne" since last evaluated tweet: 1064982058043199488
+Evaluating 1 tweet(s) for "ramonashelburne".
+
+Getting timeline for "djacoby" since last evaluated tweet: 1065445085809119232
+Evaluating 1 tweet(s) for "djacoby".
+
+Getting timeline for "PabloTorre" since last evaluated tweet: 1065100720783921152
+Evaluating 1 tweet(s) for "PabloTorre".
+
+Getting timeline for "drewmagary" since last evaluated tweet: 1065427654113931264
+Evaluating 6 tweet(s) for "drewmagary".
+
+Getting timeline for "megynkelly" since last evaluated tweet: 1064633560865353728
+Evaluating 2 tweet(s) for "megynkelly".
+
+Getting timeline for "seanhannity" since last evaluated tweet: 1065423378473988096
+Something went wrong when retrieving tweets for "seanhannity".
+
+Getting timeline for "BillOReilly" since last evaluated tweet: 1065370464816717824
+Evaluating 3 tweet(s) for "BillOReilly".
+There were 50 or more warnings (use warnings() to see the first 50)
+Finished script at 2018-11-23 05:38:28.
+********************************************************************************

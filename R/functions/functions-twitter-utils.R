@@ -266,6 +266,8 @@ import_ratio_last_post <-
 
 .import_ratio_last_scrape_possibly <-
   purrr::possibly(import_ratio_last_scrape, otherwise = NULL)
+.import_ratio_first_scrape_possibly <-
+  purrr::possibly(import_ratio_first_scrape, otherwise = NULL)
 .import_ratio_log_scrape_possibly <-
   purrr::possibly(import_ratio_log_scrape, otherwise = NULL)
 .import_ratio_last_post_possibly <-
@@ -389,6 +391,13 @@ export_ratio_last_scrape <-
   purrr::partial(
     .export_twitter_file,
     path = config$path_ratio_last_scrape,
+    append = FALSE,
+    backup = FALSE
+  )
+export_ratio_first_scrape <-
+  purrr::partial(
+    .export_twitter_file,
+    path = config$path_ratio_first_scrape,
     append = FALSE,
     backup = FALSE
   )
@@ -605,20 +614,23 @@ regenerate_user_info <-
     # TODO: Implement check that number of groups is as expected?
     res <-
       res %>%
-      group_by(!!col_grp_sym) %>%
-      arrange(desc(!!col_sort_sym), .by_group = TRUE) %>%
-      slice(1) %>%
-      ungroup()
+      group_by(!!col_grp_sym)
 
     # Note: [+-]`xtfrm()` could be used here somehow. (`desc()` is equivalent
     # to `-xtfrm()`.
     if(how == "desc") {
       res <-
         res %>%
+        arrange(desc(!!col_sort_sym), .by_group = TRUE) %>%
+        slice(1) %>%
+        ungroup() %>%
         arrange(!!col_grp_sym, desc(!!col_sort_sym))
     } else if (how == "asc") {
       res <-
         res %>%
+        arrange(!!col_sort_sym, .by_group = TRUE) %>%
+        slice(1) %>%
+        ungroup() %>%
         arrange(!!col_grp_sym, !!col_sort_sym)
     }
     res

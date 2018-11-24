@@ -68,7 +68,7 @@
         posted = 0L,
         status_id_post = NA_character_,
         text_post = NA_character_,
-        timestamp_posted = NA_character_
+        timestamp_post = NA_character_
       )
   }
 
@@ -151,7 +151,7 @@
 
 .get_tl_until <-
   function(.user,
-           .d,
+           .id,
            ...,
            .n = config$n_tl_until,
            token = .TOKEN,
@@ -165,7 +165,6 @@
       )
       message(msg)
     }
-
     suppressMessages(
       rtweet::get_timeline(
         user = .user,
@@ -179,6 +178,8 @@
     )
   }
 
+.get_tl_until_possibly <-
+  purrr::possibly(.get_tl_until, otherwise = NULL)
 
 .filter_tl_bytime <-
   function(data, n_hour_lag_scrape = config$n_hour_lag_scrape, ...) {

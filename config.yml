@@ -18,7 +18,7 @@ default:
   n_hour_lag_scrape: 12
   n_tl_new: 100
   # n_tl_since: 1000
-  n_tl_until: 1000
+  n_tl_until: 15
 
   tl_cache: false
 
