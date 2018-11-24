@@ -77,44 +77,109 @@
     data %>% rename(user = screen_name)
   }
 
-.get_tl_first <-
+.get_tweets_first <-
   function(.user,
+           type = c("tl", "favs"),
            ...,
            .n = config$n_tl_new,
            token = .TOKEN,
            # token = rtweet::get_token(),
+           rename = TRUE,
+           filter = TRUE,
            verbose = config$verbose_scrape) {
+    type <- match.arg(type)
+    if(type == "tl") {
+      f_get <- rtweet::get_timeline
+    } else if (type == "favs") {
+      f_get <- rtweet::get_favorites
+    }
     if (verbose) {
+      if(type == "tl") {
+        txt <- "tweets from timeline"
+      } else if (type == "favs") {
+        txt <- "favorites"
+      }
       msg <-
         sprintf(
           paste0(
-            "\nGetting last %d tweets from timeline for \"%s\"."
+            "\nGetting last %d %s for \"%s\"."
           ),
-          n,
+          .n,
+          txt,
           .user
         )
       message(msg)
     }
 
     suppressMessages(
-      rtweet::get_timeline(
-        user = .user,
-        n = .n,
-        token = token,
-        ...
-      ) %>%
-        .rename_tl() %>%
-        .filter_tweet_type()
+      res <-
+        f_get(
+          user = .user,
+          n = .n,
+          token = token,
+          ...
+        )
     )
+    if(rename) {
+
+      res <-
+        res %>%
+        .rename_tl()
+    }
+    if(filter) {
+
+      res <-
+        res %>%
+        .filter_tweet_type()
+    }
+    res
+  }
+.get_tl_first <-
+  function(type = "tl", ...) {
+    .get_tweets_first(type = type, ...)
+  }
+.get_favs_first <-
+  function(type = "favs", ...) {
+    .get_tweets_first(type = type, ...)
   }
 
 .get_tl_first_possibly <-
   purrr::possibly(.get_tl_first, otherwise = NULL)
 
-.get_tl_self <-
-  purrr::partial(.get_tl_first, .user = "punditratio")
+# purrr::partial(.get_tl_first, .user = "punditratio", .n = 1800L, filter = FALSE)
+# function(.user = "punditratio", .n = 1800L, filter = FALSE, ...) {
+#   .get_tl_first(
+#     .user = .user,
+#     .n = .n,
+#     filter = filter,
+#     ...
+#   ) %>%
+#     .select_tl_cols_at()
+# }
 
-.get_tl_self_possibly <- purrr::possibly(.get_tl_self, otherwise = NULL)
+.get_tweets_self <-
+  function(.user = "punditratio", rename = TRUE, filter = FALSE, ...) {
+    tl <-
+      .get_tl_first(
+        .user = .user,
+        .n = 3200L,
+        rename = rename,
+        filter = filter,
+        ...
+      )
+    favs <-
+      .get_favs_first(
+        .user = .user,
+        .n = 3000L,
+        rename = rename,
+        filter = filter,
+        ...
+      )
+    res <-
+      bind_rows(tl, favs)
+  }
+
+.get_tweets_self_possibly <- purrr::possibly(.get_tweets_self, otherwise = NULL)
 
 .get_tl_since <-
   function(.user,
@@ -123,27 +188,41 @@
            .n = config$n_tl_since,
            token = .TOKEN,
            # token = rtweet::get_token(),
+           rename = TRUE,
+           filter = TRUE,
            verbose = config$verbose_scrape) {
     if (verbose) {
       msg <- sprintf(
         paste0("\nGetting timeline for \"%s\" since last evaluated tweet: %s"),
         .user,
-        .since_id
+        .id
       )
       message(msg)
     }
 
     suppressMessages(
-      rtweet::get_timeline(
-        user = .user,
-        since_id = .id,
-        token = token,
-        # n = .n,
-        ...
-      ) %>%
-        .rename_tl() %>%
-        .filter_tweet_type()
+      res <-
+        rtweet::get_timeline(
+          user = .user,
+          since_id = .id,
+          token = token,
+          # n = .n,
+          ...
+        )
     )
+    if(rename) {
+
+      res <-
+        res %>%
+        .rename_tl()
+    }
+    if(filter) {
+
+      res <-
+        res %>%
+        .filter_tweet_type()
+    }
+    res
   }
 
 .get_tl_since_possibly <-

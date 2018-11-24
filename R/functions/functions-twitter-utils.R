@@ -7,8 +7,8 @@
     "category2",
     "user_tone",
     "audience_tone",
-    "scrape",
-    "post")
+    "toscrape",
+    "topost")
 
 .COLS_USER_INFO_ORDER <-
   c("user",
@@ -317,26 +317,26 @@ import_tone <-
                        ))))
   }
 
-.filter_user_scrape <-
+.filter_user_toscrape <-
   function(data, tone = NULL, ...) {
     stopifnot(is.data.frame(data))
     # TODO: Do something with this?
     # if(is.null(tone)) {
     #   tone <- import_tone()
     # }
-    data %>% filter(scrape == 1L)
+    data %>% filter(toscrape == 1L)
   }
 
-.filter_user_post <-
+.filter_user_topost <-
   function(data, ...) {
-    data %>% filter(post == 1L)
+    data %>% filter(topost == 1L)
   }
 
 get_user_toscrape <-
   function(...) {
     data <- import_user()
     data %>%
-      .filter_user_scrape() %>%
+      .filter_user_toscrape() %>%
       .flatten_user()
   }
 
@@ -347,9 +347,10 @@ get_user_topost <-
     data <-
       user %>%
       inner_join(ratio_log_scrape, by = "user") %>%
-      distinct(user)
+      distinct(user, .keep_all = TRUE)
+
     data %>%
-      .filter_user_post() %>%
+      .filter_user_topost() %>%
       .flatten_user()
   }
 

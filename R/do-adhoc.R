@@ -1,9 +1,5 @@
 
-# tl_self <- .get_tl_self()
-# tl_self
-# status_id_destroy <- tl_self %>% slice(2) %>% pull(status_id)
-# rtweet::post_tweet(destroy_id = status_id_destroy)
-
+# get_cspan ----
 # # Reference: https://github.com/mkearney/cspan_data/blob/master/make.R.
 # .get_cspan_list <- function(slug) {
 #   x <- rtweet::lists_members(slug = slug, owner_user = "CSPAN")
@@ -29,6 +25,7 @@
 #   rtweet::lists_members(slug = "governors", owner_user = "cspan")
 # list_gov
 
+# user_info ----
 # ratio_log_scrape <- import_ratio_log_scrape()
 # user <-
 #   ratio_log_scrape %>%
@@ -41,7 +38,7 @@
 # user_info
 # user_info %>% teproj::export_path(config$path_user_info)
 
-
+# do_scrape_ratio (max_id) ----
 # do_scrape_ratio_all(user = "NateSilver538", method = "until")
 # .do_scrape_ratio(user = "RealSkipBayless", method = "until", cache = TRUE)
 
@@ -49,4 +46,7 @@
 # ratio_log_scrape %>%
 #   arrange(user, created_at) %>%
 #   export_ratio_log_scrape()
+
+# refresh_ratio_log_scrape ----
+# refresh_ratio_log_scrape()
 

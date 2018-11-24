@@ -1,4 +1,4 @@
-user,employer,category1,category2,user_tone,audience_tone,scrape,post
+user,employer,category1,category2,user_tone,audience_tone,toscrape,topost
 RealSkipBayless,Fox Sports,sports,,debate,mockery,1,1
 stephenasmith,ESPN,sports,,neutral,mockery,1,1
 NateSilver538,FiveThirtyEight,sports,politics,debate,debate,1,1

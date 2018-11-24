@@ -3,9 +3,10 @@
 # determine whether to post tweets for all screen names or just one.
 .do_post_ratio <-
   function(user = NULL,
+           ...,
+           method = NULL,
            ratio_log_scrape = NULL,
            ratio_last_post = NULL,
-           ...,
            post = config$post,
            sentinel = config$post_status_id_sentinel,
            verbose = config$verbose_post) {
@@ -81,7 +82,7 @@
       data2 = bind_rows(ratio_topost_raw, ratio_notposted_raw)
     )
 
-    # browser()
+
     ratio_topost <-
       ratio_topost_raw %>%
       mutate(
@@ -105,7 +106,7 @@
           status_id_post =
             purrr::pmap_chr(
               list(user, status_id, text_post),
-              ~.ratio_post(
+              ~.ratio_post_possiblye(
                 user = ..1,
                 status_id = ..2,
                 text_post = ..3
@@ -116,7 +117,7 @@
       ratio_wasposted_raw <- ratio_topost %>%  mutate(status_id_post = sentinel)
     }
 
-    status_id_post <- ratio_was_posted_raw %>% pull(status_id_post)
+    status_id_post <- ratio_wasposted_raw %>% pull(status_id_post)
     was_posted <- ifelse(status_id_post != sentinel, TRUE, FALSE)
     if(!was_posted) {
       text_post <- ratio_topost %>% pull(text_post)
@@ -137,31 +138,43 @@
       message(msg)
     }
 
-    suppressMessages(
-      ratio_log_scrape_export <-
-        ratio_log_scrape %>%
-        mutate(rn = row_number()) %>%
-        left_join(
-          bind_rows(
-            ratio_wasposted_raw %>% mutate(posted = 1L),
-            ratio_notposted_raw %>% mutate(posted = 0L)
-            ) %>%
-            mutate(considered = 1L, timestamp_post = Sys.time()) %>%
-            .select_ratio_cols_at(),
-          by = .COLS_RATIO_BASE_ORDER,
-          suffix = c("", "_y")
+    # TODO: Test that the newer function works!
+    # suppressMessages(
+    #   ratio_log_scrape_export <-
+    #     ratio_log_scrape %>%
+    #     mutate(rn = row_number()) %>%
+    #     left_join(
+    #       bind_rows(
+    #         ratio_wasposted_raw %>% mutate(posted = 1L),
+    #         ratio_notposted_raw %>% mutate(posted = 0L)
+    #         ) %>%
+    #         mutate(considered = 1L, timestamp_post = Sys.time()) %>%
+    #         .select_ratio_cols_at(),
+    #       by = .COLS_RATIO_BASE_ORDER,
+    #       suffix = c("", "_y")
+    #     ) %>%
+    #     mutate(
+    #       considered = coalesce(considered_y, considered),
+    #       posted = coalesce(posted_y, posted),
+    #       status_id_post = coalesce(status_id_post_y, status_id_post),
+    #       text_post = coalesce(text_post_y, text_post),
+    #       timestamp_post = coalesce(timestamp_post_y, timestamp_post)
+    #     )%>%
+    #     arrange(rn) %>%
+    #     select(-rn) %>%
+    #     .select_ratio_cols_at()
+    # )
+
+    ratio_log_scrape_export <-
+      .rebind_ratio_log_scrape_loosely(
+        x = ratio_log_scrape,
+        y =  bind_rows(
+          ratio_wasposted_raw %>% mutate(posted = 1L),
+          ratio_notposted_raw %>% mutate(posted = 0L)
         ) %>%
-        mutate(
-          considered = coalesce(considered_y, considered),
-          posted = coalesce(posted_y, posted),
-          status_id_post = coalesce(status_id_post_y, status_id_post),
-          text_post = coalesce(text_post_y, text_post),
-          timestamp_post = coalesce(timestamp_post_y, timestamp_post)
-        )%>%
-        arrange(rn) %>%
-        select(-rn) %>%
-        .select_ratio_cols_at()
-    )
+          mutate(considered = 1L, timestamp_post = Sys.time()) %>%
+          .select_ratio_cols_at()
+      )
 
     .compare_n_row_eq(
       data1 = ratio_log_scrape_export,

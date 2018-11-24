@@ -28,7 +28,7 @@ default:
   # Note: It is recommended to set this to true and leave the other `post_*` parameters
   # as they would otherwise be defined.
   # post: true
-  post: false
+  post: true
 
   post_n_since_min: 10
   post_hour_since_min: 23
